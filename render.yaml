@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: ethioshop-backend
+    env: python
+    plan: starter
+    branch: main
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && gunicorn wsgi:app --workers 4 --threads 4 --timeout 120
+    healthCheckPath: /health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: '10000'
+  - type: worker
+    name: ethioshop-bot
+    env: python
+    plan: starter
+    branch: main
+    buildCommand: pip install -r bot/requirements.txt
+    startCommand: cd bot && python main.py
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: API_BASE_URL
+        sync: false
+      - key: BOT_SECRET
+        sync: false
+      - key: ADMIN_CHAT_ID
+        sync: false

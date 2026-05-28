@@ -1,0 +1,3 @@
+"""
+EthioShop Backend Package
+"""

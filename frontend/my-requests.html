@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>My Requests - EthioShop</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .request-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 1rem;
+        }
+        .request-card img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; }
+        .status-pill {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+        .status-pending_sourcing { background: #fff3cd; color: #856404; }
+        .status-price_quoted { background: #d4edda; color: #155724; }
+        .status-converted { background: #cce5ff; color: #004085; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .admin-msg { background: #f0f7ff; border-left: 3px solid #2c7da0; padding: 0.75rem; margin-top: 0.5rem; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand"><h1>EthioShop</h1></div>
+                <div class="nav-links">
+                    <a href="shop.html">Shop</a>
+                    <a href="dashboard.html">Dashboard</a>
+                    <a href="my-requests.html" class="active">My Requests</a>
+                    <a href="cart.html" class="cart-link">Cart <span class="cart-badge">0</span></a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container" style="margin: 2rem auto 3rem;">
+            <h2>My Product Requests</h2>
+            <p style="color:#666;">Track admin quotes and responses for items you requested.</p>
+            <div id="loginPrompt" style="display:none;text-align:center;padding:2rem;">
+                <a href="index.html" class="btn btn-primary">Login to view requests</a>
+            </div>
+            <div id="requestsList"><p>Loading...</p></div>
+        </div>
+    </main>
+
+    <footer><div class="container"><p>&copy; 2024 EthioShop</p></div></footer>
+
+    <script src="config.js"></script>
+    <script src="assets/js/site-enhancements.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/my-requests.js"></script>
+</body>
+</html>

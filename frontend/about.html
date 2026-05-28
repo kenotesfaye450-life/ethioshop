@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>About Us - EthioShop</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .about-wrap {
+            max-width: 720px;
+            margin: 2rem auto 3rem;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .owner-photo {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #2c7da0;
+            margin: 0 auto 1rem;
+            display: block;
+            background: #f0f0f0;
+        }
+        .trust-badge {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #27ae60;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand"><h1>EthioShop</h1></div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="about.html" class="active">About</a>
+                    <a href="dashboard.html">Dashboard</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container about-wrap" id="aboutContent">
+            <p>Loading...</p>
+        </div>
+    </main>
+
+    <footer><div class="container"><p>&copy; 2024 EthioShop — Trusted shopping in Ethiopia</p></div></footer>
+
+    <script src="config.js"></script>
+    <script src="assets/js/site-enhancements.js"></script>
+    <script>
+        async function loadAbout() {
+            const box = document.getElementById('aboutContent');
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/settings/about`);
+                const data = await res.json();
+                const a = data.about || {};
+                const img = a.owner_image_url
+                    ? `<img class="owner-photo" src="${a.owner_image_url}" alt="${a.owner_name}">`
+                    : `<div class="owner-photo" style="line-height:160px;color:#999;">Photo</div>`;
+                box.innerHTML = `
+                    <span class="trust-badge">✓ Verified Seller</span>
+                    <h2>Meet Your Trusted Seller</h2>
+                    ${img}
+                    <h3>${a.owner_name || 'EthioShop Team'}</h3>
+                    <p style="color:#666;">${a.owner_title || ''} · ${a.years_experience || ''} years experience</p>
+                    <p style="text-align:left;margin:1.5rem 0;line-height:1.6;">${a.owner_bio || ''}</p>
+                    <p><strong>Contact:</strong> ${a.contact_phone || '-'}</p>
+                    <p style="margin-top:1rem;">
+                        ${a.social_telegram ? `<a href="${a.social_telegram}" target="_blank" class="btn btn-primary">Telegram</a> ` : ''}
+                        ${a.social_facebook ? `<a href="${a.social_facebook}" target="_blank" class="btn btn-secondary">Facebook</a>` : ''}
+                    </p>
+                `;
+            } catch (e) {
+                box.innerHTML = '<p>Unable to load about page.</p>';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadAbout);
+    </script>
+</body>
+</html>

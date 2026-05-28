@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - EthioShop Admin</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+    <aside class="sidebar">
+        <h2>EthioShop Admin</h2>
+        <nav>
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="orders.html" class="active">📦 Orders</a>
+            <a href="products.html">🛍️ Products</a>
+            <a href="requests.html">📋 Customer Requests</a>
+            <a href="refunds.html">💰 Refunds</a>
+            <a href="settings.html">⚙️ Settings</a>
+            <a href="admins.html">👥 Admins</a>
+            <a href="#" onclick="logout()">🚪 Logout</a>
+        </nav>
+        <div class="admin-info"><p id="adminName"></p></div>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <h1>Orders Management</h1>
+            <div class="filter-bar">
+                <select id="statusFilter">
+                    <option value="">All Orders</option>
+                    <option value="pending_verification">Pending Verification</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="refunded">Refunded</option>
+                </select>
+            </div>
+        </header>
+        <div id="ordersContainer"><p>Loading orders...</p></div>
+    </main>
+</div>
+
+<!-- Order Details Modal -->
+<div id="orderModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div id="orderDetails"></div>
+    </div>
+</div>
+
+<script src="../config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/orders.js"></script>
+</body>
+</html>

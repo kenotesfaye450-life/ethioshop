@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Settings - EthioShop Admin</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+    <aside class="sidebar">
+        <h2>EthioShop Admin</h2>
+        <nav>
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="orders.html">📦 Orders</a>
+            <a href="products.html">🛍️ Products</a>
+            <a href="requests.html">📋 Customer Requests</a>
+            <a href="refunds.html">💰 Refunds</a>
+            <a href="settings.html" class="active">⚙️ Settings</a>
+            <a href="admins.html">👥 Admins</a>
+            <a href="#" onclick="logout()">🚪 Logout</a>
+        </nav>
+        <div class="admin-info"><p id="adminName"></p></div>
+    </aside>
+    <main class="main-content">
+        <header><h1>About Page Settings</h1></header>
+        <form id="settingsForm" class="modal-content" style="display:block;max-width:560px;">
+            <div class="form-group"><label>Owner name</label><input type="text" id="owner_name"></div>
+            <div class="form-group"><label>Title</label><input type="text" id="owner_title"></div>
+            <div class="form-group"><label>Owner image URL</label><input type="url" id="owner_image_url" placeholder="https://..."></div>
+            <div class="form-group"><label>Or upload image</label><input type="file" id="ownerImageFile" accept="image/*"></div>
+            <div class="form-group"><label>Bio</label><textarea id="owner_bio" rows="4"></textarea></div>
+            <div class="form-group"><label>Years experience</label><input type="text" id="years_experience"></div>
+            <div class="form-group"><label>Contact phone</label><input type="text" id="contact_phone"></div>
+            <div class="form-group"><label>Telegram URL</label><input type="url" id="social_telegram"></div>
+            <div class="form-group"><label>Facebook URL</label><input type="url" id="social_facebook"></div>
+            <div class="form-group"><label>Owner message (landing page)</label><textarea id="owner_message" rows="3"></textarea></div>
+            <hr style="margin:1rem 0;">
+            <h3>Referral &amp; Rewards</h3>
+            <div class="form-group"><label>Max referral credit per year (ETB)</label><input type="number" id="max_referral_per_year" min="0" step="1"></div>
+            <div class="form-group"><label>Request-to-product reward (ETB)</label><input type="number" id="request_reward_etb" min="0" step="1"></div>
+            <hr style="margin:1rem 0;">
+            <h3>Announcement Modal</h3>
+            <div class="form-group"><label>Announcement Message</label><textarea id="announcement_message" rows="3" placeholder="Write short site-wide announcement"></textarea></div>
+            <div class="form-group"><label><input type="checkbox" id="announcement_active"> Show announcement to customers</label></div>
+            <div class="form-group"><label>Seconds before customer can close</label><input type="number" id="announcement_close_delay_seconds" min="3" step="1" value="3"></div>
+            <div class="form-group"><label>Auto-dismiss after (seconds, 0 = never)</label><input type="number" id="announcement_display_seconds" min="0" step="1" value="0"><small>Customer can still close manually once the timer allows.</small></div>
+            <button type="submit" class="btn-primary">Save Settings</button>
+        </form>
+    </main>
+</div>
+<script src="../config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/settings.js"></script>
+</body>
+</html>

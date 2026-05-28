@@ -1,0 +1,57 @@
+# Node
+node_modules/
+
+# Legacy admin folder
+admin-panel/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+.env
+.env.*
+venv/
+.env.local
+
+# VS Code
+.vscode/
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Flask / Django stuff
+instance/
+.webassets-cache
+
+# Mac
+.DS_Store
+
+# Local uploads
+backend/uploads/
+
+# Alembic/SQLAlchemy
+backend/migrations/versions/*.pyc
+
+# Logs
+*.log

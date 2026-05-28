@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EthioShop Admin</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <style>
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.2rem; margin-bottom:2rem; }
+        .stat-card  { background:white; padding:1.25rem; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); text-align:center; }
+        .stat-card h3 { margin:0 0 0.4rem; color:#666; font-size:0.8rem; text-transform:uppercase; letter-spacing:.5px; }
+        .stat-number  { font-size:2rem; font-weight:bold; color:#2c7da0; margin:0; }
+        .stat-card.warn  .stat-number { color:#e67e22; }
+        .stat-card.green .stat-number { color:#27ae60; }
+        .stat-card.red   .stat-number { color:#e74c3c; }
+        .stat-card small { color:#999; font-size:0.75rem; }
+        .section-title { font-size:1rem; font-weight:bold; margin:1.5rem 0 0.75rem; color:#333; }
+        .data-table { width:100%; border-collapse:collapse; background:white; border-radius:12px;
+                      overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+        .data-table th { background:#f8f9fa; padding:10px 14px; text-align:left; font-size:0.8rem; color:#666; text-transform:uppercase; }
+        .data-table td { padding:10px 14px; border-bottom:1px solid #f0f0f0; font-size:0.9rem; }
+        .data-table tr:last-child td { border-bottom:none; }
+        .two-col { display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; }
+        @media(max-width:768px){ .two-col { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+<div class="admin-layout">
+    <aside class="sidebar">
+        <h2>EthioShop Admin</h2>
+        <nav>
+            <a href="dashboard.html" class="active">📊 Dashboard</a>
+            <a href="orders.html">📦 Orders</a>
+            <a href="products.html">🛍️ Products</a>
+            <a href="requests.html">📋 Customer Requests</a>
+            <a href="refunds.html">💰 Refunds</a>
+            <a href="settings.html">⚙️ Settings</a>
+            <a href="admins.html">👥 Admins</a>
+            <a href="#" onclick="logout()">🚪 Logout</a>
+        </nav>
+        <div class="admin-info"><p id="adminName"></p></div>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <h1>Dashboard</h1>
+            <button onclick="loadStats()" style="padding:0.4rem 1rem;cursor:pointer;">↻ Refresh</button>
+        </header>
+
+        <!-- Stats cards -->
+        <div class="stats-grid">
+            <div class="stat-card green">
+                <h3>Total Sales</h3>
+                <p class="stat-number" id="totalSales">—</p>
+                <small>ETB (confirmed + delivered)</small>
+            </div>
+            <div class="stat-card warn">
+                <h3>Pending Orders</h3>
+                <p class="stat-number" id="pendingOrders">—</p>
+                <small>Awaiting verification</small>
+            </div>
+            <div class="stat-card">
+                <h3>Total Orders</h3>
+                <p class="stat-number" id="totalOrders">—</p>
+                <small>All time</small>
+            </div>
+            <div class="stat-card">
+                <h3>Orders Today</h3>
+                <p class="stat-number" id="dailyOrders">—</p>
+                <small>Last 24 hours</small>
+            </div>
+            <div class="stat-card red">
+                <h3>Refunds</h3>
+                <p class="stat-number" id="refundCount">—</p>
+                <small id="refundTotal">0 ETB</small>
+            </div>
+            <div class="stat-card green">
+                <h3>Referrals</h3>
+                <p class="stat-number" id="referralCount">—</p>
+                <small id="referralCredit">0 ETB awarded</small>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <!-- Recent orders -->
+            <div>
+                <p class="section-title">Recent Orders</p>
+                <table class="data-table">
+                    <thead><tr>
+                        <th>ID</th><th>Customer</th><th>Total</th>
+                        <th>Status</th><th>Delivery</th><th>Date</th>
+                    </tr></thead>
+                    <tbody id="recentOrdersBody">
+                        <tr><td colspan="6" style="text-align:center;color:#999;padding:2rem;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Top referrers -->
+            <div>
+                <p class="section-title">Top Referrers</p>
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>User</th><th>Referrals</th></tr></thead>
+                    <tbody id="topReferrersBody">
+                        <tr><td colspan="3" style="text-align:center;color:#999;padding:1rem;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="margin-top:1.5rem;">
+            <!-- Top products -->
+            <div>
+                <p class="section-title">Top Products (by units sold)</p>
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Product</th><th>Sold</th></tr></thead>
+                    <tbody id="topProductsBody">
+                        <tr><td colspan="3" style="text-align:center;color:#999;padding:2rem;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="../config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

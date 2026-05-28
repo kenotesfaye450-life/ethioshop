@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "frontend/**/*.html", "use": "@vercel/static" },
+    { "src": "frontend/admin/**/*.html", "use": "@vercel/static" },
+    { "src": "frontend/**/*.{js,css,svg,png,jpg,jpeg,webp}", "use": "@vercel/static" },
+    { "src": "frontend/admin/**/*.{js,css,svg,png,jpg,jpeg,webp}", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/admin/(.*)", "dest": "/frontend/admin/$1" },
+    { "src": "/(.*)", "dest": "/frontend/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    }
+  ]
+}

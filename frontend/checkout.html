@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Checkout - EthioShop</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <h1>EthioShop</h1>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="cart.html" class="cart-link">
+                        Cart <span class="cart-badge">0</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <h2 style="margin: 2rem 0;">Checkout</h2>
+            
+            <div class="checkout-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+                <div class="cart-container">
+                    <h3>Delivery Information</h3>
+                    <form id="checkoutForm" onsubmit="submitOrder(event)">
+                        <div class="form-group">
+                            <label for="fullName">Full Name *</label>
+                            <input type="text" id="fullName" required minlength="2"
+                                   placeholder="Your full name" autocomplete="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number *</label>
+                            <input type="tel" 
+                                   id="phone" 
+                                   required 
+                                   placeholder="+251912345678"
+                                   pattern="(\+251|251|0)[97]\d{8}">
+                            <small>Ethiopian phone number (e.g., +251912345678 or 0912345678)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">Delivery Address *</label>
+                            <textarea id="address" 
+                                      required 
+                                      placeholder="Enter your full address (city, area, landmark)"></textarea>
+                        </div>
+
+                        <details class="local-person-section" style="margin:1rem 0;padding:1rem;border:1px solid #e0e0e0;border-radius:8px;background:#f9fcff;">
+                            <summary style="cursor:pointer;font-weight:bold;color:#2c7da0;">
+                                Delivery too far? Let a local person bring it to you (optional)
+                            </summary>
+                            <p style="font-size:0.9rem;color:#666;margin:0.75rem 0;">
+                                If you live outside our delivery zone, name someone nearby who can receive the package and bring it to you.
+                            </p>
+                            <div class="form-group">
+                                <label for="localPersonName">Local person full name</label>
+                                <input type="text" id="localPersonName" placeholder="e.g. Abebe Kebede">
+                            </div>
+                            <div class="form-group">
+                                <label for="localPersonPhone">Local person phone</label>
+                                <input type="tel" id="localPersonPhone" placeholder="0912345678"
+                                       pattern="(\+251|251|0)[97]\d{8}">
+                            </div>
+                            <div class="form-group">
+                                <label for="localPersonNotes">Additional notes (optional)</label>
+                                <textarea id="localPersonNotes" rows="2" placeholder="Landmark, meeting point, etc."></textarea>
+                            </div>
+                        </details>
+                        
+                        <div class="form-group">
+                            <label for="paymentMethod">Payment Method *</label>
+                            <select id="paymentMethod" required onchange="showPaymentDetails()">
+                                <option value="">Select payment method</option>
+                                <option value="Telebirr">Telebirr</option>
+                                <option value="CBE">CBE Birr</option>
+                                <option value="Bank Transfer">Bank Transfer (Awash)</option>
+                            </select>
+                        </div>
+
+                        <!-- Payment account details shown after selection -->
+                        <div id="paymentDetails" style="display:none; background:#e8f4fd; border:1px solid #bee3f8; border-radius:6px; padding:1rem; margin-bottom:1rem;">
+                            <strong>📋 Send payment to:</strong>
+                            <div id="telebirrDetails" style="display:none; margin-top:0.5rem;">
+                                <p>📱 <strong>Telebirr:</strong> <span style="font-size:1.1rem; color:#1a73e8;">0912345678</span></p>
+                                <p style="color:#555;">Account Name: <strong>EthioShop Trading</strong></p>
+                            </div>
+                            <div id="cbeDetails" style="display:none; margin-top:0.5rem;">
+                                <p>🏦 <strong>CBE Birr:</strong> <span style="font-size:1.1rem; color:#1a73e8;">1000123456789</span></p>
+                                <p style="color:#555;">Account Name: <strong>EthioShop Trading</strong></p>
+                            </div>
+                            <div id="bankDetails" style="display:none; margin-top:0.5rem;">
+                                <p>🏦 <strong>Awash Bank:</strong> <span style="font-size:1.1rem; color:#1a73e8;">013456789012</span></p>
+                                <p style="color:#555;">Account Name: <strong>EthioShop Trading</strong></p>
+                            </div>
+                            <p style="margin-top:0.75rem; font-size:0.85rem; color:#666;">After payment, upload your screenshot on the next page.</p>
+                        </div>
+                        
+                        <div id="creditInfo" style="display: none; background: #e8f5e9; padding: 1rem; border-radius: 5px; margin-bottom: 1rem;">
+                            <!-- Credit info will be loaded here -->
+                        </div>
+                        
+                        <div id="paymentInstructions" style="background: #fff3cd; padding: 1rem; border-radius: 5px; margin-bottom: 1rem;">
+                            <strong>Payment Instructions:</strong>
+                            <p>After placing your order, you will receive payment details. Please complete payment and upload proof on the order confirmation page.</p>
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Plan *</label>
+                            <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                                <label><input type="radio" name="paymentPlan" value="half" checked onchange="updateEscrowMessage()"> Pay half now (50%), remaining after delivery</label>
+                                <label><input type="radio" name="paymentPlan" value="full" onchange="updateEscrowMessage()"> Pay full now</label>
+                            </div>
+                            <div id="escrowMessage" class="escrow-info-box" style="display:block;margin-top:0.75rem;padding:0.85rem;background:#e8f5e9;border:1px solid #b7dfc3;border-radius:8px;font-size:0.92rem;color:#1e6b3a;">
+                                <i class="fa-solid fa-lock" style="margin-right:0.35rem;"></i>
+                                <strong>Your first half payment is held safely.</strong> You will only pay the remaining half after you confirm delivery.
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%;">
+                            Place Order
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="cart-container" id="orderSummary">
+                    <!-- Order summary will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 EthioShop. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="assets/js/site-enhancements.js"></script>
+    <script src="assets/js/constants.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/checkout.js"></script>
+    <script>
+        // Drive payment details from constants.js PAYMENT_METHODS
+        function showPaymentDetails() {
+            const val = document.getElementById('paymentMethod').value;
+            const box = document.getElementById('paymentDetails');
+            ['telebirrDetails','cbeDetails','bankDetails'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            if (!val) { box.style.display = 'none'; return; }
+            box.style.display = 'block';
+            const map = { 'Telebirr': 'telebirrDetails', 'CBE': 'cbeDetails', 'Bank Transfer': 'bankDetails' };
+            const target = map[val];
+            if (target) document.getElementById(target).style.display = 'block';
+        }
+    </script>
+</body>
+</html>

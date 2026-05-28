@@ -1,0 +1,18 @@
+{
+  "project": {
+    "name": "ethioshop",
+    "description": "EthioShop production deployment configuration"
+  },
+  "services": [
+    {
+      "name": "backend",
+      "root": "backend",
+      "startCommand": "gunicorn wsgi:app"
+    },
+    {
+      "name": "bot",
+      "root": "bot",
+      "startCommand": "python main.py"
+    }
+  ]
+}

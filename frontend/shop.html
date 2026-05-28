@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Shop - EthioShop</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <h1>EthioShop</h1>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="request.html">Request Product</a>
+                    <a href="dashboard.html">My Account</a>
+                    <a href="cart.html" class="cart-link">
+                        Cart <span class="cart-badge">0</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="shop-header">
+                <h2>Shop Products</h2>
+                <div class="filters">
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">All Categories</option>
+                    </select>
+                    <input type="text" id="searchInput" placeholder="Search products..." class="search-input">
+                </div>
+            </div>
+
+            <div id="loadingSpinner" class="loading">Loading products...</div>
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            
+            <div id="productGrid" class="product-grid">
+                <!-- Products will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 EthioShop. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="assets/js/site-enhancements.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/shop.js"></script>
+</body>
+</html>

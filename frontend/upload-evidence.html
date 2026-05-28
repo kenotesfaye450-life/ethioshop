@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Upload Evidence - EthioShop</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand"><h1>EthioShop</h1></div>
+                <div class="nav-links"><a href="dashboard.html">← Dashboard</a></div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container cart-container" style="max-width:520px;margin:2rem auto;">
+            <h2 id="pageTitle">Upload Evidence</h2>
+            <p id="pageDesc" style="color:#666;"></p>
+            <form id="uploadForm">
+                <input type="file" id="file" accept="image/*" required style="margin:1rem 0;">
+                <button type="submit" class="btn btn-primary" id="submitBtn">Upload</button>
+            </form>
+            <p id="status" style="margin-top:1rem;"></p>
+        </div>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script>
+        const params = new URLSearchParams(location.search);
+        const orderId = params.get('order_id');
+        const refundId = params.get('refund_id');
+        const payRemaining = params.get('remaining') === '1';
+        const phone = sessionStorage.getItem('userPhone');
+
+        if (!phone) location.href = 'index.html';
+        if (orderId) {
+            document.getElementById('pageTitle').textContent = `Upload Payment Proof — Order #${orderId}`;
+            document.getElementById('pageDesc').textContent = payRemaining
+                ? 'Upload proof for your remaining payment.'
+                : 'Admin requested clearer payment evidence.';
+        } else if (refundId) {
+            document.getElementById('pageTitle').textContent = `Upload Refund Evidence — #${refundId}`;
+            document.getElementById('pageDesc').textContent = 'Upload bank statement or supporting screenshot.';
+        } else {
+            document.getElementById('pageDesc').textContent = 'Missing order or refund id.';
+        }
+
+        document.getElementById('uploadForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const file = document.getElementById('file').files[0];
+            if (!file) return;
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Uploading...';
+
+            try {
+                const fd = new FormData();
+                fd.append('file', file);
+                fd.append('folder', 'payments');
+                const up = await fetch(`${API_BASE_URL}/api/upload/image`, { method: 'POST', body: fd });
+                const upData = await up.json();
+                if (!upData.success) throw new Error(upData.error?.message);
+
+                const url = upData.url || upData.image_url;
+                if (orderId) {
+                    if (payRemaining) {
+                        await OrderAPI.payRemaining(orderId, { phone, payment_proof_url: url });
+                    } else {
+                        await OrderAPI.uploadPaymentProof(orderId, { phone, payment_proof_url: url });
+                    }
+                } else if (refundId) {
+                    await RefundAPI.uploadEvidence(refundId, { phone, additional_evidence_url: url });
+                }
+                document.getElementById('status').textContent = '✅ Uploaded successfully!';
+                setTimeout(() => { location.href = 'dashboard.html'; }, 1500);
+            } catch (err) {
+                document.getElementById('status').textContent = 'Error: ' + err.message;
+                btn.disabled = false;
+                btn.textContent = 'Upload';
+            }
+        };
+    </script>
+</body>
+</html>

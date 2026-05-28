@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Request a Product - EthioShop</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand"><h1>EthioShop</h1></div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="cart.html" class="cart-link">Cart <span class="cart-badge">0</span></a>
+                    <a href="dashboard.html">My Account</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container" style="max-width:600px; margin:2rem auto;">
+            <h2>Request a Product</h2>
+            <p style="color:#666; margin-bottom:1.5rem;">
+                Can't find what you're looking for? Upload a photo and describe it.
+                Our team will source it and quote you a price.
+            </p>
+
+            <div class="cart-container">
+                <div class="form-group">
+                    <label for="requestName">Your Full Name *</label>
+                    <input type="text" id="requestName" placeholder="e.g. Keno Tesfaye" minlength="2" required
+                           style="width:100%; padding:0.75rem; border:1px solid #ddd; border-radius:5px; font-size:1rem;">
+                </div>
+                <div class="form-group" style="margin-top:1rem;">
+                    <label for="requestPhone">Your Phone Number *</label>
+                    <input type="tel" id="requestPhone" placeholder="+251912345678 or 0912345678"
+                           pattern="(\+251|251|0)[97]\d{8}" required
+                           style="width:100%; padding:0.75rem; border:1px solid #ddd; border-radius:5px; font-size:1rem;">
+                </div>
+
+                <div class="form-group" style="margin-top:1rem;">
+                    <label for="requestImage">Product Image *</label>
+                    <input type="file" id="requestImage" accept="image/*" required
+                           style="width:100%; padding:0.5rem; border:1px solid #ddd; border-radius:5px;">
+                    <small style="color:#888;">Upload a photo of the product you want (max 5MB)</small>
+                    <div id="imagePreview" style="margin-top:0.5rem;"></div>
+                </div>
+
+                <div class="form-group" style="margin-top:1rem;">
+                    <label for="requestDesc">Description *</label>
+                    <textarea id="requestDesc" rows="4" required
+                              placeholder="Describe the product: color, size, brand, where you saw it, etc."
+                              style="width:100%; padding:0.75rem; border:1px solid #ddd; border-radius:5px; font-size:1rem; resize:vertical;"></textarea>
+                </div>
+
+                <div class="form-group" style="margin-top:1rem;">
+                    <label for="requestBudget">Your Budget (ETB) — optional</label>
+                    <input type="number" id="requestBudget" min="0" step="1"
+                           placeholder="e.g. 1500"
+                           style="width:100%; padding:0.75rem; border:1px solid #ddd; border-radius:5px; font-size:1rem;">
+                </div>
+
+                <div style="margin-top:1rem;padding:1rem;background:#fff8e1;border:1px solid #f2d98f;border-radius:8px;font-size:0.92rem;line-height:1.5;">
+                    <strong>Terms</strong>
+                    <p style="margin:0.5rem 0;">
+                        By submitting a product request, you agree that EthioShop may source or sell similar products.
+                        No compensation is owed for ideas. However, if your requested product is added to our catalog,
+                        you will receive <strong>20 ETB</strong> store credit as a thank you.
+                    </p>
+                    <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;">
+                        <input type="checkbox" id="requestTermsAgree" required style="margin-top:0.25rem;">
+                        <span>I agree to the terms above</span>
+                    </label>
+                </div>
+
+                <button id="submitRequestBtn" class="btn btn-primary"
+                        style="width:100%; margin-top:1.5rem; padding:0.9rem; font-size:1rem;">
+                    Submit Request
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 EthioShop. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="assets/js/site-enhancements.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/request.js"></script>
+    <script>
+        // Image preview
+        document.getElementById('requestImage').addEventListener('change', function() {
+            const preview = document.getElementById('imagePreview');
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.innerHTML = `<img src="${e.target.result}" style="max-width:200px; max-height:200px; border-radius:8px; margin-top:0.5rem;">`;
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    </script>
+</body>
+</html>

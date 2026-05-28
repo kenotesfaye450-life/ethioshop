@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>EthioShop — Trusted Online Shopping in Ethiopia</title>
+    <meta name="description" content="Shop with secure half-payment, real delivery confirmation, referrals, and product requests.">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/landing.css">
+    <style>
+        .auth-panel { display: none; }
+        .auth-panel.active { display: block; }
+        .tabs { display: flex; margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
+        .tabs button { flex: 1; padding: 0.75rem; border: none; background: #f5f5f5; cursor: pointer; font-weight: bold; }
+        .tabs button.active { background: #2c7da0; color: white; }
+        .auth-error, .auth-success { display: none; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem; }
+        .auth-error { background: #fdecea; color: #c0392b; }
+        .auth-success { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body class="landing-page">
+
+    <nav class="landing-nav">
+        <div class="container">
+            <strong>EthioShop</strong>
+            <div>
+                <a href="#how">How it works</a>
+                <a href="#login">Login</a>
+                <a href="shop.html">Shop</a>
+                <a href="about.html">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="landing-hero">
+        <div class="container">
+            <h1>Shop smarter across Ethiopia</h1>
+            <p class="lead">Real products, secure payments, half-pay option, and delivery you confirm yourself. No fake hype — just transparent shopping.</p>
+            <div class="landing-cta">
+                <a href="#login" class="btn btn-primary">Get Started</a>
+                <a href="shop.html" class="btn btn-secondary" style="background:#fff;color:#2c7da0;">Browse Shop</a>
+                <a href="https://t.me/EthioShopTrusted_bot" class="btn btn-secondary" target="_blank" rel="noopener" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid #fff;">Telegram Bot</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-section">
+        <div class="container">
+            <div class="trust-badges" style="justify-content:center;">
+                <span><i class="fa-solid fa-shield-halved"></i> Secure payments (Telebirr / CBE / Bank)</span>
+                <span><i class="fa-solid fa-circle-check"></i> Verified shop</span>
+                <span><i class="fa-solid fa-truck"></i> Free delivery &gt;1000 ETB</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-section" id="how">
+        <div class="container">
+            <h2>How EthioShop works</h2>
+            <ol class="landing-steps">
+                <li><strong>Register</strong> with your phone — one account for web and Telegram.</li>
+                <li><strong>Shop</strong> real catalog items with live stock counts.</li>
+                <li><strong>Pay half or full</strong> — half payment is held until you confirm delivery.</li>
+                <li><strong>We deliver</strong> — track status on your dashboard or Telegram bot.</li>
+                <li><strong>Confirm delivery</strong> — then pay any remaining balance if you chose half payment.</li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="landing-section" style="background:#fff;">
+        <div class="container landing-grid">
+            <div class="landing-card">
+                <h3>🎁 Referral program</h3>
+                <p id="landingReferralText">Earn store credit when friends complete their first confirmed order.</p>
+            </div>
+            <div class="landing-card">
+                <h3>📋 Request a product</h3>
+                <p id="landingRequestText">Can't find it? Request it — earn credit if we add it.</p>
+            </div>
+            <div class="landing-card">
+                <h3>🤝 Far from delivery zone?</h3>
+                <p>At checkout, name a trusted local person who can receive and bring your order to you.</p>
+            </div>
+            <div class="landing-card">
+                <h3>📱 Telegram notifications</h3>
+                <p>For updates when you're not on the website, use our <a href="https://t.me/EthioShopTrusted_bot" target="_blank" rel="noopener">Telegram bot</a>.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-section">
+        <div class="container landing-grid">
+            <div class="landing-card">
+                <h3>Recent sales (real)</h3>
+                <div id="recentSalesList"><p style="color:#888;">Loading...</p></div>
+            </div>
+            <div class="landing-card">
+                <h3>Customer reviews (real)</h3>
+                <div id="recentReviewsList"><p style="color:#888;">Loading...</p></div>
+            </div>
+        </div>
+        <p id="lowStockHint" style="text-align:center;margin-top:1rem;color:#666;font-size:0.9rem;"></p>
+    </section>
+
+    <section class="landing-section" style="background:#fff;">
+        <div class="container landing-owner">
+            <img id="ownerMessageImg" src="" alt="Owner" style="display:none;">
+            <div>
+                <h3 id="ownerMessageName">EthioShop</h3>
+                <p id="ownerMessageText" style="line-height:1.6;margin-top:0.5rem;">Loading message...</p>
+                <a href="about.html" class="btn btn-primary btn-sm" style="margin-top:0.75rem;">About Us</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-auth-wrap" id="login">
+        <div class="container">
+            <h2 style="text-align:center;margin-bottom:1.5rem;">Login or create your account</h2>
+            <div class="landing-auth-card">
+                <div class="tabs">
+                    <button type="button" id="tabLogin" class="active">Login</button>
+                    <button type="button" id="tabRegister">Register</button>
+                </div>
+                <div id="authError" class="auth-error"></div>
+                <div id="authSuccess" class="auth-success"></div>
+
+                <div id="panelLogin" class="auth-panel active">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="loginPhone">Phone Number</label>
+                            <input type="tel" id="loginPhone" required placeholder="+251912345678 or 0912345678"
+                                   pattern="(\+251|251|0)[97]\d{8}" autocomplete="tel">
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%;">Login</button>
+                    </form>
+                </div>
+
+                <div id="panelRegister" class="auth-panel">
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="registerName">Full Name</label>
+                            <input type="text" id="registerName" required minlength="2" placeholder="e.g. Keno Tesfaye">
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPhone">Phone Number</label>
+                            <input type="tel" id="registerPhone" required placeholder="+251912345678 or 0912345678"
+                                   pattern="(\+251|251|0)[97]\d{8}">
+                        </div>
+                        <div class="form-group">
+                            <label for="referralCode">Referral Code (optional)</label>
+                            <input type="text" id="referralCode" placeholder="ETH12345">
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="registerBtn" style="width:100%;">Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 EthioShop. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="assets/js/site-enhancements.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/index.js"></script>
+    <script>
+        const phonePattern = /^(\+251|251|0)[97]\d{8}$/;
+        const errEl = document.getElementById('authError');
+        const okEl = document.getElementById('authSuccess');
+
+        (function captureReferralFromUrl() {
+            const ref = new URLSearchParams(window.location.search).get('ref');
+            if (ref) {
+                const cleaned = ref.trim();
+                sessionStorage.setItem('referral_code', cleaned);
+                sessionStorage.setItem('referralCode', cleaned);
+                const input = document.getElementById('referralCode');
+                if (input) input.value = cleaned;
+            }
+        })();
+
+        if (sessionStorage.getItem('userPhone')) {
+            window.location.href = 'dashboard.html';
+        }
+
+        function showError(msg) { okEl.style.display = 'none'; errEl.textContent = msg; errEl.style.display = 'block'; }
+        function showSuccess(msg) { errEl.style.display = 'none'; okEl.textContent = msg; okEl.style.display = 'block'; }
+        function saveSession(user) {
+            sessionStorage.setItem('userPhone', user.phone);
+            if (user.name) sessionStorage.setItem('userName', user.name);
+        }
+        function switchTab(tab) {
+            const isLogin = tab === 'login';
+            document.getElementById('tabLogin').classList.toggle('active', isLogin);
+            document.getElementById('tabRegister').classList.toggle('active', !isLogin);
+            document.getElementById('panelLogin').classList.toggle('active', isLogin);
+            document.getElementById('panelRegister').classList.toggle('active', !isLogin);
+            errEl.style.display = 'none'; okEl.style.display = 'none';
+        }
+        document.getElementById('tabLogin').onclick = () => switchTab('login');
+        document.getElementById('tabRegister').onclick = () => switchTab('register');
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('loginPhone').value.trim();
+            const btn = document.getElementById('loginBtn');
+            if (!phonePattern.test(phone)) { showError('Please enter a valid Ethiopian phone number.'); return; }
+            btn.disabled = true; btn.textContent = 'Logging in...';
+            try {
+                const data = await UserAPI.getByPhone(phone);
+                saveSession(data.user);
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                showError(error.message || 'Account not found. Please register first.');
+                btn.disabled = false; btn.textContent = 'Login';
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value.trim();
+            const phone = document.getElementById('registerPhone').value.trim();
+            const referral_code = document.getElementById('referralCode').value.trim()
+                || sessionStorage.getItem('referral_code') || sessionStorage.getItem('referralCode') || undefined;
+            const btn = document.getElementById('registerBtn');
+            if (!phonePattern.test(phone)) { showError('Please enter a valid Ethiopian phone number.'); return; }
+            if (name.length < 2) { showError('Please enter your full name.'); return; }
+            btn.disabled = true; btn.textContent = 'Creating account...';
+            try {
+                const data = await UserAPI.create({ phone, name, referral_code });
+                saveSession(data.user);
+                showSuccess(data.existing ? 'Welcome back! Redirecting...' : 'Account created! Redirecting...');
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
+            } catch (error) {
+                showError(error.message || 'Registration failed.');
+                btn.disabled = false; btn.textContent = 'Create Account';
+            }
+        });
+    </script>
+</body>
+</html>

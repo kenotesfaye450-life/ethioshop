@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - EthioShop</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <h1>EthioShop</h1>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="dashboard.html">Dashboard</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="cart-container" style="max-width: 600px; margin: 3rem auto; text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+                <h2>Order Placed Successfully!</h2>
+                <p style="margin: 1rem 0; color: #666;">Order #<span id="orderId"></span></p>
+                
+                <div id="orderDetails" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; text-align: left;">
+                    <!-- Order details will be loaded here -->
+                </div>
+                
+                <div style="background: #fff3cd; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
+                    <h3 style="margin-bottom: 1rem;">📱 Payment Instructions</h3>
+                    <div id="paymentInstructions" style="text-align: left;">
+                        <!-- Payment instructions will be loaded here -->
+                    </div>
+                </div>
+                
+                <div style="background: #e8f5e9; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
+                    <h3 style="margin-bottom: 1rem;">📸 Upload Payment Proof</h3>
+                    <p style="margin-bottom: 1rem; color: #666;">Please upload a screenshot of your payment transaction</p>
+                    
+                    <form id="uploadForm" onsubmit="uploadPaymentProof(event)">
+                        <input type="file" 
+                               id="paymentProof" 
+                               accept="image/*" 
+                               required
+                               style="display: block; margin: 1rem auto; padding: 0.5rem;">
+                        
+                        <div id="preview" style="margin: 1rem 0;"></div>
+                        
+                        <button type="submit" id="uploadBtn" class="btn btn-primary">
+                            Upload Payment Proof
+                        </button>
+                    </form>
+                    
+                    <p id="uploadStatus" style="margin-top: 1rem; font-weight: bold;"></p>
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <a href="dashboard.html" class="btn btn-secondary">View My Orders</a>
+                    <a href="shop.html" class="btn btn-primary" style="margin-left: 1rem;">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 EthioShop. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script>
+        let orderId = null;
+        let orderData = null;
+        
+        async function initOrderSuccess() {
+            // Get order ID from URL
+            const params = new URLSearchParams(window.location.search);
+            orderId = params.get('id');
+            
+            if (!orderId) {
+                alert('No order ID found');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('orderId').textContent = orderId;
+            
+            // Load order details
+            try {
+                const response = await OrderAPI.getById(orderId);
+                orderData = response.order;
+                displayOrderDetails();
+                displayPaymentInstructions();
+            } catch (error) {
+                alert('Error loading order details: ' + error.message);
+            }
+        }
+        
+        function displayOrderDetails() {
+            const container = document.getElementById('orderDetails');
+            
+            container.innerHTML = `
+                <p><strong>Total Amount:</strong> ${orderData.final_total.toFixed(2)} ETB</p>
+                ${orderData.credit_used > 0 ? `<p><strong>Credit Used:</strong> ${orderData.credit_used.toFixed(2)} ETB</p>` : ''}
+                <p><strong>Payment Method:</strong> ${orderData.payment_method}</p>
+                <p><strong>Status:</strong> ${orderData.status.replace('_', ' ')}</p>
+            `;
+        }
+        
+        function displayPaymentInstructions() {
+            const container = document.getElementById('paymentInstructions');
+            const method = orderData.payment_method;
+            const amount = orderData.final_total.toFixed(2);
+            
+            let instructions = '';
+            
+            if (method === 'Telebirr') {
+                instructions = `
+                    <p><strong>1.</strong> Open your Telebirr app</p>
+                    <p><strong>2.</strong> Send <strong>${amount} ETB</strong> to: <strong>0912345678</strong></p>
+                    <p><strong>3.</strong> Take a screenshot of the confirmation</p>
+                    <p><strong>4.</strong> Upload the screenshot below</p>
+                `;
+            } else if (method === 'CBE') {
+                instructions = `
+                    <p><strong>1.</strong> Open your CBE Birr app</p>
+                    <p><strong>2.</strong> Send <strong>${amount} ETB</strong> to: <strong>0911223344</strong></p>
+                    <p><strong>3.</strong> Take a screenshot of the confirmation</p>
+                    <p><strong>4.</strong> Upload the screenshot below</p>
+                `;
+            } else {
+                instructions = `
+                    <p><strong>1.</strong> Transfer <strong>${amount} ETB</strong> to:</p>
+                    <p><strong>Bank:</strong> Commercial Bank of Ethiopia</p>
+                    <p><strong>Account:</strong> 1000123456789</p>
+                    <p><strong>Account Name:</strong> EthioShop Trading</p>
+                    <p><strong>2.</strong> Take a screenshot of the confirmation</p>
+                    <p><strong>3.</strong> Upload the screenshot below</p>
+                `;
+            }
+            
+            container.innerHTML = instructions;
+        }
+        
+        async function uploadPaymentProof(event) {
+            event.preventDefault();
+            
+            const fileInput = document.getElementById('paymentProof');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+            
+            const uploadBtn = document.getElementById('uploadBtn');
+            const statusEl = document.getElementById('uploadStatus');
+            
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+            statusEl.textContent = '';
+            
+            try {
+                // Upload image to server
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('folder', 'payment-proofs');
+                
+                const uploadResponse = await fetch(`${API_BASE_URL}/api/upload/image`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const uploadData = await uploadResponse.json();
+                
+                if (!uploadData.success) {
+                    throw new Error(uploadData.error.message);
+                }
+                
+                // Update order with payment proof URL
+                await updateOrderWithPaymentProof(uploadData.url);
+                
+            } catch (error) {
+                statusEl.textContent = '❌ Upload failed: ' + error.message;
+                statusEl.style.color = '#e74c3c';
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload Payment Proof';
+            }
+        }
+        
+        async function updateOrderWithPaymentProof(imageUrl) {
+            const uploadBtn = document.getElementById('uploadBtn');
+            const statusEl = document.getElementById('uploadStatus');
+            
+            try {
+                // Update order with payment proof URL
+                const response = await fetch(`${API_ENDPOINTS.orders}/${orderId}/payment-proof`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        payment_proof_url: imageUrl,
+                        phone: sessionStorage.getItem('userPhone') || ''
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error.message);
+                }
+                
+                statusEl.textContent = '✅ Payment proof uploaded successfully!';
+                statusEl.style.color = '#27ae60';
+                uploadBtn.textContent = 'Uploaded';
+                
+                // Show preview
+                const preview = document.getElementById('preview');
+                const file = document.getElementById('paymentProof').files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" style="max-width: 300px; border-radius: 8px; margin-top: 1rem;">`;
+                };
+                reader.readAsDataURL(file);
+                
+                setTimeout(() => {
+                    statusEl.textContent += ' Your order will be verified by our team shortly.';
+                }, 1000);
+                
+            } catch (error) {
+                statusEl.textContent = '❌ Upload failed: ' + error.message;
+                statusEl.style.color = '#e74c3c';
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload Payment Proof';
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initOrderSuccess);
+    </script>
+</body>
+</html>
