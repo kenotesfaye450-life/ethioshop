@@ -1,21 +1,10 @@
-// frontend/config.js
+// frontend/config.js – hardcoded Railway backend URL
 (function () {
-    const getApiBaseUrl = () => {
-        if (typeof window !== 'undefined' && window.__ETHIOSHOP_API_BASE_URL__) {
-            return window.__ETHIOSHOP_API_BASE_URL__.replace(/\/$/, '');
-        }
-        if (typeof window !== 'undefined' &&
-            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-            return 'http://localhost:5000';
-        }
-        return 'https://your-backend.onrender.com';
-    };
-
-    const API_BASE_URL = getApiBaseUrl();
-    const ADMIN_API_BASE_URL = `${API_BASE_URL}/api`;
+    // Use your actual Railway backend URL (no trailing slash)
+    const API_BASE_URL = 'https://web-production-afefc.up.railway.app';
 
     window.API_BASE_URL = API_BASE_URL;
-    window.ADMIN_API_BASE_URL = ADMIN_API_BASE_URL;
+    window.ADMIN_API_BASE_URL = `${API_BASE_URL}/api`;
 
     window.API_ENDPOINTS = {
         products: `${API_BASE_URL}/api/products`,
@@ -28,7 +17,6 @@
         settings: `${API_BASE_URL}/api/settings`
     };
 
-    // Legacy globals used by existing scripts
     window.SOCIAL_LINKS = {
         tiktok: 'https://www.tiktok.com/@ethioshopofficial',
         facebook: 'https://www.facebook.com/profile.php?id=61590636471935',
@@ -39,7 +27,6 @@
     };
 })();
 
-// Non-window references for scripts that use bare identifiers
 var API_BASE_URL = window.API_BASE_URL;
 var ADMIN_API_BASE_URL = window.ADMIN_API_BASE_URL;
 var API_ENDPOINTS = window.API_ENDPOINTS;
