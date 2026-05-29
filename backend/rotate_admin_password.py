@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Rotate default admin password using SQLAlchemy."""
+"""Rotate default admin password using SQLAlchemy (Railway‑compatible)."""
 
 import sys
 import os
 import bcrypt
 import secrets
 import string
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.getcwd())
 
-from backend.app import create_app
-from backend.extensions import db
-from backend.models import Admin
+from app import create_app
+from extensions import db
+from models import Admin
 
 def generate_strong_password(length=16):
     alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
