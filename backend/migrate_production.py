@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Production migration using Flask+SQLAlchemy (no direct psycopg2)."""
+"""Production migration using Flask+SQLAlchemy (Railway‑compatible)."""
 
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.getcwd())  # ensure /app is in path
 
-from backend.app import create_app
-from backend.extensions import db
+from app import create_app
+from extensions import db
 
 def run_migration():
     app = create_app()
