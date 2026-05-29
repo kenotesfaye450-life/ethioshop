@@ -411,3 +411,29 @@ def storage_cleanup():
         }), 200
     except Exception as e:
         return jsonify({'success': False, 'error': {'code': 'SERVER_ERROR', 'message': str(e)}}), 500
+
+
+# ========== TEMPORARY MIGRATION ENDPOINT – REMOVE AFTER USE ==========
+@bp.route('/run-migrations', methods=['POST'])
+def run_migrations():
+    import subprocess
+    import sys
+    import os
+
+    auth_token = os.environ.get('MIGRATION_TOKEN', 'SUPER_SECRET_MIGRATION_TOKEN_12345')
+    token = request.headers.get('X-Migration-Token')
+    if token != auth_token:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    try:
+        result1 = subprocess.run([sys.executable, 'migrate_production.py'], capture_output=True, text=True, cwd='/app')
+        result2 = subprocess.run([sys.executable, 'rotate_admin_password.py'], capture_output=True, text=True, cwd='/app')
+
+        return jsonify({
+            'migration_stdout': result1.stdout,
+            'migration_stderr': result1.stderr,
+            'rotate_stdout': result2.stdout,
+            'rotate_stderr': result2.stderr
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
