@@ -3,7 +3,7 @@
 
 import sys
 import os
-sys.path.append(os.getcwd())  # ensure /app is in path
+sys.path.append(os.getcwd())
 
 from app import create_app
 from extensions import db
@@ -25,7 +25,6 @@ def run_migration():
         db.session.execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS local_person_phone VARCHAR(20)")
         db.session.execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS local_person_notes TEXT")
 
-        # Payments table
         db.session.execute("""
             CREATE TABLE IF NOT EXISTS payments (
                 id SERIAL PRIMARY KEY,
@@ -39,7 +38,6 @@ def run_migration():
             )
         """)
 
-        # Reviews table
         db.session.execute("""
             CREATE TABLE IF NOT EXISTS reviews (
                 id SERIAL PRIMARY KEY,
@@ -52,7 +50,6 @@ def run_migration():
             )
         """)
 
-        # Bot cart table
         db.session.execute("""
             CREATE TABLE IF NOT EXISTS bot_cart (
                 id SERIAL PRIMARY KEY,
@@ -64,7 +61,6 @@ def run_migration():
             )
         """)
 
-        # Order messages table
         db.session.execute("""
             CREATE TABLE IF NOT EXISTS order_messages (
                 id SERIAL PRIMARY KEY,
@@ -75,7 +71,6 @@ def run_migration():
             )
         """)
 
-        # Site settings table
         db.session.execute("""
             CREATE TABLE IF NOT EXISTS site_settings (
                 key VARCHAR(100) PRIMARY KEY,
@@ -95,7 +90,6 @@ def run_migration():
             ON CONFLICT (key) DO NOTHING
         """)
 
-        # Request table: add credit awarded flag
         db.session.execute("ALTER TABLE requests ADD COLUMN IF NOT EXISTS request_credit_awarded BOOLEAN DEFAULT FALSE")
 
         db.session.commit()
