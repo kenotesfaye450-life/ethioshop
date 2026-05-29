@@ -28,7 +28,7 @@ CHECKOUT_CITY = 11
 CHECKOUT_CONFIRM = 12
 PAGE_SIZE = 5
 
-from bot.utils.validators import normalize_ethiopian_phone
+from utils.validators import normalize_ethiopian_phone
 
 
 def _normalize_phone(raw: str) -> str:
