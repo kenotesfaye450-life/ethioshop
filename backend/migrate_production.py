@@ -95,8 +95,8 @@ def run_migration():
         db.session.execute("""
             CREATE TABLE IF NOT EXISTS product_questions (
                 id SERIAL PRIMARY KEY,
-                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-                product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
                 question TEXT NOT NULL,
                 answer TEXT,
                 status VARCHAR(20) DEFAULT 'pending',

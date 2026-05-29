@@ -616,6 +616,9 @@ footer {
 .dashboard-layout { display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem; align-items: start; }
 .dashboard-nav { display: flex; flex-direction: column; gap: 0.35rem; }
 .dash-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
     text-align: left;
     padding: 0.75rem 1rem;
     border: 1px solid #e0e0e0;
@@ -624,7 +627,10 @@ footer {
     cursor: pointer;
     min-height: 44px;
 }
+.dash-tab i { width: 1.25rem; text-align: center; }
 .dash-tab.active { background: #2c7da0; color: #fff; border-color: #2c7da0; }
+.dashboard-bottom-nav .dash-tab { flex-direction: column; gap: 0.2rem; font-size: 0.7rem; }
+.dashboard-bottom-nav .dash-tab span { display: block; }
 .dash-panel { display: none; }
 .dash-panel.active { display: block; }
 .dashboard-bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #ddd; padding: 0.35rem; z-index: 50; flex-wrap: wrap; gap: 0.25rem; justify-content: space-around; }

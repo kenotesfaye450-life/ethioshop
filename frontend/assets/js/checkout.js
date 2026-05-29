@@ -134,7 +134,12 @@ async function submitOrder(event) {
     submitBtn.textContent = 'Processing...';
     
     try {
-        const phone = document.getElementById('phone').value.trim();
+        const phone = typeof normalizeEthiopianPhone === 'function'
+            ? normalizeEthiopianPhone(document.getElementById('phone').value.trim())
+            : document.getElementById('phone').value.trim();
+        if (!phone) {
+            throw new Error('Please enter a valid Ethiopian phone (09 or 07, 10 digits).');
+        }
         const fullName = document.getElementById('fullName').value.trim();
         const paymentMethod = document.getElementById('paymentMethod').value;
         const paymentPlan = document.querySelector('input[name="paymentPlan"]:checked')?.value || 'half';

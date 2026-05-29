@@ -9,6 +9,7 @@ from models import (
 )
 from config import Config
 from utils.auth import require_auth, require_role
+from utils.validators import normalize_ethiopian_phone
 
 bp = Blueprint('orders', __name__, url_prefix='/api/orders')
 
@@ -39,6 +40,14 @@ def create_order():
                 }
             }), 400
         
+        try:
+            data['phone'] = normalize_ethiopian_phone(data.get('phone', ''))
+        except ValueError as e:
+            return jsonify({
+                'success': False,
+                'error': {'code': 'VALIDATION_ERROR', 'message': str(e)},
+            }), 400
+
         # Get or create user
         user = User.query.filter_by(phone=data['phone']).first()
         if not user:

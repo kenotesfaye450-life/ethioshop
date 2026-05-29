@@ -25,7 +25,7 @@
             <strong>EthioShop</strong>
             <div>
                 <a href="#how">How it works</a>
-                <a href="dashboard.html">Dashboard</a>
+                <a href="dashboard.html" id="navDashboard">Dashboard</a>
                 <a href="#login">Account</a>
                 <a href="shop.html">Shop</a>
                 <a href="about.html">About</a>
@@ -38,8 +38,8 @@
             <h1>Shop smarter across Ethiopia</h1>
             <p class="lead">Real products, secure payments, half-pay option, and delivery you confirm yourself. No fake hype — just transparent shopping.</p>
             <div class="landing-cta">
-                <a href="#login" class="btn btn-primary">Get Started</a>
-                <a href="shop.html" class="btn btn-secondary" style="background:#fff;color:#2c7da0;">Browse Shop</a>
+                <a href="shop.html" class="btn btn-primary">Shop now</a>
+                <a href="request.html" class="btn btn-secondary" style="background:#fff;color:#2c7da0;">Request product</a>
                 <a href="https://t.me/EthioShopTrusted_bot" class="btn btn-secondary" target="_blank" rel="noopener" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid #fff;">Telegram Bot</a>
             </div>
         </div>
@@ -177,10 +177,12 @@
 
     <script src="config.js"></script>
     <script src="assets/js/site-enhancements.js"></script>
+    <script src="assets/js/phone-utils.js"></script>
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/guest-auth.js"></script>
     <script src="assets/js/index.js"></script>
     <script>
-        const phonePattern = /^(\+251|251|0)[97]\d{8}$/;
         const errEl = document.getElementById('authError');
         const okEl = document.getElementById('authSuccess');
 
@@ -214,9 +216,9 @@
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const phone = document.getElementById('loginPhone').value.trim();
+            const phone = normalizeEthiopianPhone(document.getElementById('loginPhone').value.trim());
             const btn = document.getElementById('loginBtn');
-            if (!phonePattern.test(phone)) { showError('Please enter a valid Ethiopian phone number.'); return; }
+            if (!phone) { showError('Please enter a valid Ethiopian phone (09 or 07, 10 digits).'); return; }
             btn.disabled = true; btn.textContent = 'Logging in...';
             try {
                 const data = await UserAPI.getByPhone(phone);
@@ -231,11 +233,11 @@
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('registerName').value.trim();
-            const phone = document.getElementById('registerPhone').value.trim();
+            const phone = normalizeEthiopianPhone(document.getElementById('registerPhone').value.trim());
             const referral_code = document.getElementById('referralCode').value.trim()
                 || sessionStorage.getItem('referral_code') || sessionStorage.getItem('referralCode') || undefined;
             const btn = document.getElementById('registerBtn');
-            if (!phonePattern.test(phone)) { showError('Please enter a valid Ethiopian phone number.'); return; }
+            if (!phone) { showError('Please enter a valid Ethiopian phone (09 or 07, 10 digits).'); return; }
             if (name.length < 2) { showError('Please enter your full name.'); return; }
             btn.disabled = true; btn.textContent = 'Creating account...';
             try {

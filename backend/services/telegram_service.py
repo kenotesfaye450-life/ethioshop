@@ -187,3 +187,20 @@ class NotificationService:
             f"<i>Answer:</i> {product_question.answer}"
         )
         NotificationService._notify_customer(user, msg)
+
+    @staticmethod
+    def notify_admin_new_question(product_question, product):
+        admin_chat_id = os.getenv('ADMIN_CHAT_ID')
+        if not admin_chat_id:
+            return
+        user = product_question.user
+        phone = user.phone if user else 'unknown'
+        product_name = product.name if product else 'Product'
+        msg = (
+            f'📝 <b>New product question</b> (#{product_question.id})\n'
+            f'Product: {product_name}\n'
+            f'From: {phone}\n'
+            f'Question: {product_question.question}\n'
+            f'Answer in Admin → Product Questions.'
+        )
+        _send(admin_chat_id, msg)

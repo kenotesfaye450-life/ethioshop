@@ -22,9 +22,16 @@ function previewCleanup(action) {
 
 function executeCleanup(action) {
     const labels = {
-        test_orders: 'pending_verification orders older than 7 days',
+        test_orders: 'abandoned pending_verification orders (no payment, no proof) older than 7 days',
         unconfirmed_users: 'users with no orders older than 30 days',
     };
     if (!confirm(`Permanently delete ${labels[action]}?`)) return;
+    if (action === 'test_orders') {
+        const typed = prompt('Type DELETE to confirm permanent deletion of test orders:');
+        if (typed !== 'DELETE') {
+            alert('Cleanup cancelled — you must type DELETE exactly.');
+            return;
+        }
+    }
     runCleanup(action, true);
 }

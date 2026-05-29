@@ -1,6 +1,8 @@
 """Telegram bot command handlers."""
 import logging
+import os as _os
 import re
+import sys
 
 from telegram import (
     InlineKeyboardButton,
@@ -26,16 +28,35 @@ CHECKOUT_CITY = 11
 CHECKOUT_CONFIRM = 12
 PAGE_SIZE = 5
 
-PHONE_RE = re.compile(r'^(\+251|251|0)[97]\d{8}$')
+_BACKEND = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))), 'backend')
+if _BACKEND not in sys.path:
+    sys.path.insert(0, _BACKEND)
+from utils.validators import normalize_ethiopian_phone
 
 
 def _normalize_phone(raw: str) -> str:
-    raw = raw.strip().replace(' ', '').replace('-', '')
-    if raw.startswith('+251') and len(raw) == 13:
-        return '0' + raw[4:]
-    if raw.startswith('251') and len(raw) == 12:
-        return '0' + raw[3:]
-    return raw
+    try:
+        return normalize_ethiopian_phone(raw or '')
+    except ValueError:
+        return (raw or '').strip()
+
+
+def _split_text_chunks(text: str, max_len: int = 4096) -> list:
+    text = text or ''
+    if len(text) <= max_len:
+        return [text]
+    chunks = []
+    rest = text
+    while rest:
+        if len(rest) <= max_len:
+            chunks.append(rest)
+            break
+        cut = rest.rfind(' ', 0, max_len)
+        if cut <= 0:
+            cut = max_len
+        chunks.append(rest[:cut].rstrip())
+        rest = rest[cut:].lstrip()
+    return chunks
 
 
 def _api(context: ContextTypes.DEFAULT_TYPE) -> APIClient:
@@ -63,7 +84,8 @@ async def _maybe_send_announcement(update: Update, context: ContextTypes.DEFAULT
         return
     msg = data['announcement'].get('announcement_message', '')
     if msg:
-        await update.message.reply_text(f'📢 {msg}')
+        for chunk in _split_text_chunks(f'📢 {msg}'):
+            await update.message.reply_text(chunk)
 
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -651,11 +673,36 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await cmd_help(update, context)
 
 
+NL_INTENTS = {
+    'help': 'help',
+    'start': 'start',
+    'shop': 'shop',
+    'cart': 'cart',
+    'orders': 'orders',
+    'balance': 'balance',
+}
+
+
 async def handle_natural_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (update.message.text or '').strip()
     if not text or text.startswith('/'):
         return
     if text.lower() in MENU_TEXT_TO_COMMAND:
+        return
+    intent = NL_INTENTS.get(text.lower())
+    if intent:
+        if intent == 'help':
+            await cmd_help(update, context)
+        elif intent == 'start':
+            await cmd_start(update, context)
+        elif intent == 'shop':
+            await cmd_shop(update, context)
+        elif intent == 'cart':
+            await cmd_cart(update, context)
+        elif intent == 'orders':
+            await cmd_orders(update, context)
+        elif intent == 'balance':
+            await cmd_balance(update, context)
         return
     phone = await get_phone(update, context)
     if not phone:

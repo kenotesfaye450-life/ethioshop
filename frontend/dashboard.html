@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>My Dashboard - EthioShop</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
 </head>
 <body>
     <header>
@@ -36,16 +37,16 @@
                 <a href="index.html#login" class="btn btn-primary">Login / Register</a>
             </div>
 
-            <div id="dashboardContent" class="dashboard-layout" style="display: none;">
-                <nav class="dashboard-nav" id="dashboardNav">
-                    <button type="button" class="dash-tab active" data-tab="overview">Overview</button>
-                    <button type="button" class="dash-tab" data-tab="orders">My Orders</button>
-                    <button type="button" class="dash-tab" data-tab="requests">My Requests</button>
-                    <button type="button" class="dash-tab" data-tab="questions">Product Questions</button>
-                    <button type="button" class="dash-tab" data-tab="settings">Settings</button>
-                </nav>
+            <div id="dashboardContent" class="dashboard-layout dashboard-container" style="display: none;">
+                <aside class="dashboard-sidebar dashboard-nav" id="dashboardNav" aria-label="Dashboard sections">
+                    <button type="button" class="dash-tab active" data-tab="overview"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>Overview</span></button>
+                    <button type="button" class="dash-tab" data-tab="orders"><i class="fa-solid fa-shopping-cart" aria-hidden="true"></i><span>Orders</span></button>
+                    <button type="button" class="dash-tab" data-tab="requests"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i><span>Requests</span></button>
+                    <button type="button" class="dash-tab" data-tab="questions"><i class="fa-solid fa-circle-question" aria-hidden="true"></i><span>Questions</span></button>
+                    <button type="button" class="dash-tab" data-tab="settings"><i class="fa-solid fa-gear" aria-hidden="true"></i><span>Settings</span></button>
+                </aside>
 
-                <div class="dashboard-panels">
+                <div class="dashboard-content dashboard-panels">
                     <section id="panel-overview" class="dash-panel active">
                         <div class="dashboard-grid">
                             <div class="info-card"><h3>💰 Credit Balance</h3><p class="big-number" id="creditBalance">0 ETB</p></div>

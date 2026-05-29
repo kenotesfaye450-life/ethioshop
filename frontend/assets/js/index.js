@@ -66,12 +66,28 @@ async function loadFeaturedProducts() {
             return;
         }
         grid.innerHTML = items.map(p => `
-            <a href="product.html?id=${p.id}" class="product-card" style="text-decoration:none;color:inherit;background:#fff;border-radius:12px;padding:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <img src="${p.thumbnail_url || p.image_url || ''}" alt="" style="width:100%;height:140px;object-fit:cover;border-radius:8px;background:#eee;">
-                <h4 style="margin:0.75rem 0 0.25rem;font-size:1rem;">${p.name}</h4>
-                <p style="margin:0;font-weight:bold;color:#2c7da0;">${p.price.toFixed(2)} ETB</p>
-            </a>
+            <article class="product-card" style="background:#fff;border-radius:12px;padding:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:flex;flex-direction:column;">
+                <a href="product.html?id=${p.id}" style="text-decoration:none;color:inherit;">
+                    <img src="${p.thumbnail_url || p.image_url || ''}" alt="" style="width:100%;height:140px;object-fit:cover;border-radius:8px;background:#eee;">
+                    <h4 style="margin:0.75rem 0 0.25rem;font-size:1rem;">${p.name}</h4>
+                    <p style="margin:0;font-weight:bold;color:#2c7da0;">${p.price.toFixed(2)} ETB</p>
+                </a>
+                <button type="button" class="btn btn-primary btn-sm" style="margin-top:0.75rem;" data-featured-add="${p.id}">Add to cart</button>
+            </article>
         `).join('');
+        grid.querySelectorAll('[data-featured-add]').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const id = Number(btn.getAttribute('data-featured-add'));
+                const phone = await requireLoginForAction('add items to your cart');
+                if (!phone) return;
+                const product = items.find(x => x.id === id);
+                if (product && typeof addToCart === 'function') {
+                    addToCart(product, 1);
+                    if (typeof showToast === 'function') showToast('Added to cart!', 'success');
+                }
+            });
+        });
     } catch (e) {
         grid.innerHTML = '<p style="color:#888;">Could not load products.</p>';
     }
@@ -80,4 +96,14 @@ async function loadFeaturedProducts() {
 document.addEventListener('DOMContentLoaded', () => {
     loadLandingData();
     loadFeaturedProducts();
+    const dash = document.getElementById('navDashboard');
+    if (dash) {
+        dash.addEventListener('click', async (e) => {
+            if (!sessionStorage.getItem('userPhone')) {
+                e.preventDefault();
+                const phone = await requireLoginForAction('open your dashboard');
+                if (phone) window.location.href = 'dashboard.html';
+            }
+        });
+    }
 });

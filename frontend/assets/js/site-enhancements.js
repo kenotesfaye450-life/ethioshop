@@ -48,12 +48,18 @@
             const banner = document.createElement('div');
             banner.id = 'announcementBanner';
             banner.className = 'announcement-banner';
-            banner.innerHTML = `
-                <div class="announcement-banner-inner">
-                    <span>📢 ${ann.announcement_message || ''}</span>
-                    <button type="button" id="announcementBannerClose" aria-label="Dismiss">×</button>
-                </div>
-            `;
+            const inner = document.createElement('div');
+            inner.className = 'announcement-banner-inner';
+            const msgSpan = document.createElement('span');
+            msgSpan.textContent = `📢 ${ann.announcement_message || ''}`;
+            const closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.id = 'announcementBannerClose';
+            closeBtn.setAttribute('aria-label', 'Dismiss');
+            closeBtn.textContent = '×';
+            inner.appendChild(msgSpan);
+            inner.appendChild(closeBtn);
+            banner.appendChild(inner);
             const header = document.querySelector('header');
             if (header) {
                 document.body.insertBefore(banner, header);

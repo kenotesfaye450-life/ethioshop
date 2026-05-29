@@ -3,6 +3,10 @@ let ordersSnapshot = {};
 let requestsSnapshot = {};
 let refundsSnapshot = {};
 let pollTimer = null;
+let activeDashboardTab = 'overview';
+let seenAnsweredQuestionIds = new Set(
+    JSON.parse(sessionStorage.getItem('seenAnsweredQuestions') || '[]').map(String)
+);
 
 function getReferralLink(code) {
     return `${window.location.origin}/?ref=${encodeURIComponent(code)}`;
@@ -19,6 +23,12 @@ async function initDashboard() {
         const response = await UserAPI.getByPhone(phone);
         currentUser = response.user;
         displayDashboard();
+        const hashTab = (location.hash || '').replace(/^#/, '');
+        if (['overview', 'orders', 'requests', 'questions', 'settings'].includes(hashTab)) {
+            switchDashboardTab(hashTab);
+        } else {
+            switchDashboardTab('overview');
+        }
         await loadOrders(true);
         await pollForUpdates();
         NotificationCenter.requestPermissionOnce();
@@ -163,7 +173,7 @@ async function loadOrders(isInitial = false) {
     const phone = sessionStorage.getItem('userPhone');
     const container = document.getElementById('ordersContainer');
     try {
-        const response = await UserAPI.getOrders(phone);
+        const response = await UserAPI.getOrders(phone, 1, 20);
         const orders = response.orders || [];
         if (!isInitial) {
             orders.forEach(o => {
@@ -179,6 +189,13 @@ async function loadOrders(isInitial = false) {
         orders.forEach(o => { next[o.id] = orderKey(o); });
         ordersSnapshot = next;
         renderOrders(orders);
+        if (response.total > orders.length) {
+            const note = document.createElement('p');
+            note.id = 'ordersPaginationNote';
+            note.style.cssText = 'color:#666;font-size:0.9rem;margin-top:0.5rem;';
+            note.textContent = `Showing ${orders.length} of ${response.total} orders (most recent).`;
+            container.appendChild(note);
+        }
     } catch (error) {
         container.innerHTML = `<p>Error loading orders: ${error.message}</p>`;
     }
@@ -188,17 +205,21 @@ async function pollForUpdates() {
     const phone = sessionStorage.getItem('userPhone');
     if (!phone) return;
 
-    try {
-        const userRes = await UserAPI.getByPhone(phone);
-        if (userRes.user.total_referrals !== currentUser.total_referrals) {
-            currentUser = userRes.user;
-            document.getElementById('totalReferrals').textContent = currentUser.total_referrals;
-            const referralEarnings = Number(currentUser.referral_earnings ?? (currentUser.total_referrals * 50));
-            document.getElementById('referralEarned').textContent = `${referralEarnings.toFixed(2)} ETB`;
-        }
-    } catch (e) { /* ignore */ }
+    if (activeDashboardTab === 'overview') {
+        try {
+            const userRes = await UserAPI.getByPhone(phone);
+            if (userRes.user.total_referrals !== currentUser.total_referrals) {
+                currentUser = userRes.user;
+                document.getElementById('totalReferrals').textContent = currentUser.total_referrals;
+                const referralEarnings = Number(currentUser.referral_earnings ?? (currentUser.total_referrals * 50));
+                document.getElementById('referralEarned').textContent = `${referralEarnings.toFixed(2)} ETB`;
+            }
+        } catch (e) { /* ignore */ }
+    }
 
-    await loadOrders(false);
+    if (activeDashboardTab === 'orders') {
+        await loadOrders(false);
+    }
 
     try {
         const reqRes = await UserAPI.getRequests(phone);
@@ -257,12 +278,19 @@ async function requestRefund(orderId) {
 }
 
 function switchDashboardTab(tab) {
-    document.querySelectorAll('.dash-tab').forEach(btn => {
+    activeDashboardTab = tab;
+    if (location.hash !== `#${tab}`) {
+        history.replaceState(null, '', `#${tab}`);
+    }
+    document.querySelectorAll('#dashboardNav .dash-tab, #dashboardBottomNav .dash-tab').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === tab);
     });
     document.querySelectorAll('.dash-panel').forEach(panel => {
         panel.classList.toggle('active', panel.id === `panel-${tab}`);
     });
+    if (tab === 'requests') loadRequestsPanel();
+    if (tab === 'questions') loadQuestionsPanel();
+    if (tab === 'orders') loadOrders(true);
 }
 
 function initDashboardTabs() {
@@ -313,8 +341,13 @@ async function loadQuestionsPanel() {
             </div>
         `).join('');
         items.filter(q => q.status === 'answered').forEach(q => {
-            NotificationCenter.add('Product question answered', `${q.product_name}: ${q.answer}`, 'success');
+            const key = String(q.id);
+            if (!seenAnsweredQuestionIds.has(key)) {
+                seenAnsweredQuestionIds.add(key);
+                NotificationCenter.notify('Product question answered', `${q.product_name}: ${q.answer}`, 'success');
+            }
         });
+        sessionStorage.setItem('seenAnsweredQuestions', JSON.stringify([...seenAnsweredQuestionIds]));
     } catch (e) {
         el.innerHTML = `<p style="color:red;">${e.message}</p>`;
     }
@@ -334,11 +367,16 @@ function logoutUser() {
     window.location.href = 'index.html';
 }
 
+window.addEventListener('hashchange', () => {
+    const tab = (location.hash || '').replace(/^#/, '');
+    if (['overview', 'orders', 'requests', 'questions', 'settings'].includes(tab)) {
+        switchDashboardTab(tab);
+    }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     initDashboardTabs();
     initDashboard().then(() => {
-        loadRequestsPanel();
-        loadQuestionsPanel();
         const sn = document.getElementById('settingsName');
         if (sn) sn.value = sessionStorage.getItem('userName') || '';
     });

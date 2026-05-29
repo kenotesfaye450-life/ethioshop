@@ -4,6 +4,7 @@ from sqlalchemy import func
 
 from extensions import db
 from models import Product, ProductImage, Review, Order, OrderItem, ProductQuestion, User
+from utils.validators import normalize_ethiopian_phone
 from services.image_service import ImageService
 from utils.auth import require_auth
 
@@ -372,12 +373,18 @@ def ask_product_question(product_id):
     """Customer asks about product stock/availability."""
     try:
         data = request.get_json() or {}
-        phone = (data.get('phone') or '').strip()
         question = (data.get('question') or '').strip()
-        if not phone or not question:
+        if not question:
             return jsonify({
                 'success': False,
                 'error': {'code': 'VALIDATION_ERROR', 'message': 'phone and question are required'},
+            }), 400
+        try:
+            phone = normalize_ethiopian_phone(data.get('phone') or '')
+        except ValueError as e:
+            return jsonify({
+                'success': False,
+                'error': {'code': 'VALIDATION_ERROR', 'message': str(e)},
             }), 400
 
         product = Product.query.get(product_id)
@@ -398,6 +405,9 @@ def ask_product_question(product_id):
             status='pending',
         )
         db.session.add(pq)
+        db.session.flush()
+        from services.telegram_service import NotificationService
+        NotificationService.notify_admin_new_question(pq, product)
         db.session.commit()
 
         return jsonify({

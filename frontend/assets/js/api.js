@@ -37,7 +37,10 @@ const ProductAPI = {
 const UserAPI = {
     getByPhone: (phone) => apiCall(`${API_ENDPOINTS.users}/${encodeURIComponent(phone)}`),
     create: (userData) => apiCall(API_ENDPOINTS.users, { method: 'POST', body: JSON.stringify(userData) }),
-    getOrders: (phone) => apiCall(`${API_ENDPOINTS.users}/${encodeURIComponent(phone)}/orders`),
+    getOrders: (phone, page = 1, limit = 20) => {
+        const qs = new URLSearchParams({ page: String(page), limit: String(limit) });
+        return apiCall(`${API_ENDPOINTS.users}/${encodeURIComponent(phone)}/orders?${qs}`);
+    },
     getRequests: (phone) => apiCall(`${API_ENDPOINTS.users}/${encodeURIComponent(phone)}/requests`),
     getRefunds: (phone) => apiCall(`${API_ENDPOINTS.users}/${encodeURIComponent(phone)}/refunds`),
     getQuestions: (phone) => apiCall(`${API_ENDPOINTS.users}/${encodeURIComponent(phone)}/questions`),

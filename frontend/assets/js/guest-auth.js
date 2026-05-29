@@ -6,7 +6,13 @@ async function ensureUserPhone(promptMessage) {
     const entered = window.prompt(promptMessage || 'Enter your Ethiopian phone number to continue (e.g. 0912345678):');
     if (!entered) return null;
 
-    const normalized = entered.trim().replace(/\s+/g, '');
+    const normalized = typeof normalizeEthiopianPhone === 'function'
+        ? normalizeEthiopianPhone(entered)
+        : null;
+    if (!normalized) {
+        alert('Invalid Ethiopian phone number. Use 09xxxxxxxx or 07xxxxxxxx.');
+        return null;
+    }
     const name = window.prompt('Your full name (for delivery):', sessionStorage.getItem('userName') || '') || 'Customer';
 
     try {

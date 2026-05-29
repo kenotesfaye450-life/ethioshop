@@ -421,6 +421,8 @@ def admin_cleanup():
             q = Order.query.filter(
                 Order.status == 'pending_verification',
                 Order.created_at < cutoff,
+                Order.amount_paid == 0,
+                Order.payment_proof_url.is_(None),
             )
             count = q.count()
             if execute:

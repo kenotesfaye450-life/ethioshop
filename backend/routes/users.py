@@ -5,21 +5,17 @@ from extensions import db
 from models import User, Order, Request, TelegramUser, CreditTransaction, Product, BotCart, SiteSetting, ProductQuestion
 from utils.auth import require_auth
 from utils.bot_auth import verify_bot_secret
+from utils.validators import normalize_ethiopian_phone, validate_ethiopian_phone as _phone_valid
 from config import Config
-import re
 import random
 import string
 
 bp = Blueprint('users', __name__, url_prefix='/api/users')
 
+
 def validate_ethiopian_phone(phone):
-    """Validate Ethiopian phone number format"""
-    patterns = [
-        r'^\+251[97]\d{8}$',
-        r'^251[97]\d{8}$',
-        r'^0[97]\d{8}$'
-    ]
-    return any(re.match(pattern, phone) for pattern in patterns)
+    """Validate Ethiopian phone (09/07 normalized)."""
+    return _phone_valid(phone)[0]
 
 def generate_referral_code():
     """Generate unique referral code"""
@@ -195,10 +191,16 @@ def link_telegram():
 
     try:
         data = request.get_json()
-        phone = data.get('phone', '').strip()
+        try:
+            phone = normalize_ethiopian_phone(data.get('phone', ''))
+        except ValueError as e:
+            return jsonify({
+                'success': False,
+                'error': {'code': 'VALIDATION_ERROR', 'message': str(e)},
+            }), 400
         chat_id = str(data.get('chat_id', '')).strip()
 
-        if not phone or not chat_id:
+        if not chat_id:
             return jsonify({
                 'success': False,
                 'error': {'code': 'VALIDATION_ERROR', 'message': 'phone and chat_id required'}
@@ -238,15 +240,14 @@ def link_telegram():
 def get_user(phone):
     """Get user by phone number"""
     try:
-        if not validate_ethiopian_phone(phone):
+        try:
+            phone = normalize_ethiopian_phone(phone)
+        except ValueError as e:
             return jsonify({
                 'success': False,
-                'error': {
-                    'code': 'VALIDATION_ERROR',
-                    'message': 'Invalid Ethiopian phone number format'
-                }
+                'error': {'code': 'VALIDATION_ERROR', 'message': str(e)},
             }), 400
-        
+
         user = User.query.filter_by(phone=phone).first()
         
         if not user:
@@ -316,15 +317,14 @@ def create_user():
                 }
             }), 400
         
-        if not validate_ethiopian_phone(phone):
+        try:
+            phone = normalize_ethiopian_phone(phone)
+        except ValueError as e:
             return jsonify({
                 'success': False,
-                'error': {
-                    'code': 'VALIDATION_ERROR',
-                    'message': 'Invalid Ethiopian phone number format'
-                }
+                'error': {'code': 'VALIDATION_ERROR', 'message': str(e)},
             }), 400
-        
+
         name = (data.get('name') or '').strip()
 
         # Check if user exists
@@ -407,6 +407,14 @@ def create_user():
 def get_user_orders(phone):
     """Get user's order history"""
     try:
+        try:
+            phone = normalize_ethiopian_phone(phone)
+        except ValueError as e:
+            return jsonify({
+                'success': False,
+                'error': {'code': 'VALIDATION_ERROR', 'message': str(e)},
+            }), 400
+
         user = User.query.filter_by(phone=phone).first()
         
         if not user:
@@ -418,10 +426,18 @@ def get_user_orders(phone):
                 }
             }), 404
         
-        orders = Order.query.filter_by(user_id=user.id).order_by(Order.created_at.desc()).all()
-        
+        page = max(int(request.args.get('page', 1)), 1)
+        limit = min(max(int(request.args.get('limit', 20)), 1), 50)
+        q = Order.query.filter_by(user_id=user.id).order_by(Order.created_at.desc())
+        total = q.count()
+        pages = max((total + limit - 1) // limit, 1)
+        orders = q.offset((page - 1) * limit).limit(limit).all()
+
         return jsonify({
             'success': True,
+            'page': page,
+            'pages': pages,
+            'total': total,
             'orders': [{
                 'id': o.id,
                 'subtotal': o.subtotal / 100,
