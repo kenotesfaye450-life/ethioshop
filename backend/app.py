@@ -5,7 +5,7 @@ from flask_talisman import Talisman
 from sqlalchemy import text
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from backend.extensions import db, migrate, limiter
+from extensions import db, migrate, limiter
 
 
 def create_app():
