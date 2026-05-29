@@ -1,6 +1,5 @@
 // frontend/config.js – hardcoded Railway backend URL
 (function () {
-    // Use your actual Railway backend URL (no trailing slash)
     const API_BASE_URL = 'https://web-production-afefc.up.railway.app';
 
     window.API_BASE_URL = API_BASE_URL;
@@ -21,6 +20,7 @@
         tiktok: 'https://www.tiktok.com/@ethioshopofficial',
         facebook: 'https://www.facebook.com/profile.php?id=61590636471935',
         youtube: 'https://www.youtube.com/@KenoTesfayeOfficial',
+        instagram: 'https://www.instagram.com/your_ethioshop_handle/',  // replace with your actual Instagram
         telegram_channel: 'https://t.me/ethioshopchannel',
         telegram_group: 'https://t.me/ethioshopofficial',
         telegram_bot: 'https://t.me/EthioShopTrusted_bot'
