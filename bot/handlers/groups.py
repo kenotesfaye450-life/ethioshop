@@ -4,7 +4,7 @@ import re
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot.services.api_client import APIClient
+from services.api_client import APIClient
 
 PRICE_CMD = re.compile(r'^!price\s+(.+)', re.IGNORECASE)
 

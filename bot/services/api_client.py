@@ -3,7 +3,7 @@ import logging
 
 import aiohttp
 
-from bot.config import API_BASE_URL, BOT_SECRET
+from config import API_BASE_URL, BOT_SECRET
 
 logger = logging.getLogger(__name__)
 

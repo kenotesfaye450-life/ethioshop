@@ -10,8 +10,8 @@ from alembic import context
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app import create_app
-from backend.extensions import db  # ← use extensions.py, not app.py (avoids circular import)
-import backend.models               # noqa: F401 — ensure all models are registered on metadata
+from extensions import db  # ← use extensions.py, not app.py (avoids circular import)
+import models               # noqa: F401 — ensure all models are registered on metadata
 
 config = context.config
 if config.config_file_name:
@@ -22,7 +22,7 @@ target_metadata = db.metadata
 
 def run_migrations_offline():
     """Run migrations without a live DB connection (generates SQL only)."""
-    from backend.config import Config
+    from config import Config
     url = Config.SQLALCHEMY_DATABASE_URI
     context.configure(
         url=url,

@@ -1,10 +1,10 @@
 """Demand request routes"""
 from flask import Blueprint, request, jsonify
-from backend.extensions import db
-from backend.models import Request, User, Order, Product, ProductImage, CreditTransaction, SiteSetting
-from backend.config import Config
-from backend.utils.auth import require_auth, require_role
-from backend.services.image_service import ImageService
+from extensions import db
+from models import Request, User, Order, Product, ProductImage, CreditTransaction, SiteSetting
+from config import Config
+from utils.auth import require_auth, require_role
+from services.image_service import ImageService
 
 bp = Blueprint('requests', __name__, url_prefix='/api/requests')
 
@@ -135,7 +135,7 @@ def quote_price(request_id):
         db.session.commit()
 
         try:
-            from backend.services.telegram_service import NotificationService
+            from services.telegram_service import NotificationService
             NotificationService.notify_request_quote(r)
         except Exception as e:
             print(f"Notification error: {e}")
@@ -167,7 +167,7 @@ def reject_request(request_id):
                     pass
         db.session.commit()
         try:
-            from backend.services.telegram_service import NotificationService
+            from services.telegram_service import NotificationService
             NotificationService.notify_request_rejected(r)
         except Exception as e:
             print(f"Notification error: {e}")
@@ -258,7 +258,7 @@ def convert_to_product(request_id):
                 transaction_type='request_reward',
             ))
             try:
-                from backend.services.telegram_service import NotificationService
+                from services.telegram_service import NotificationService
                 NotificationService.notify_request_credit_awarded(requester, reward_etb, product.name)
             except Exception as e:
                 print(f"Notification error: {e}")

@@ -4,7 +4,7 @@ chat_id is stored in the telegram_users table (not users.telegram_chat_id).
 """
 import os
 import requests as http_requests
-from backend.config import Config
+from config import Config
 
 
 def send_telegram_message(chat_id: str, text: str) -> bool:
@@ -35,7 +35,7 @@ def _get_chat_id(user) -> str | None:
     if user is None:
         return None
     try:
-        from backend.models import TelegramUser
+        from models import TelegramUser
         tg = TelegramUser.query.filter_by(user_id=user.id).first()
         if tg:
             return tg.chat_id

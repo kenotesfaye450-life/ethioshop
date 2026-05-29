@@ -1,9 +1,9 @@
 """Initialize database with tables and seed data"""
 import bcrypt
 
-from backend.app import create_app
-from backend.extensions import db
-from backend.models import (
+from app import create_app
+from extensions import db
+from models import (
     User, Product, Order, Admin, Refund, Request,
     Referral, CreditTransaction, TelegramUser,
 )

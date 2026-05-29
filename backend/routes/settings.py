@@ -3,10 +3,10 @@ from flask import Blueprint, request, jsonify
 from sqlalchemy import func
 from datetime import datetime, timedelta
 
-from backend.extensions import db
-from backend.models import SiteSetting
-from backend.config import Config
-from backend.utils.auth import require_auth
+from extensions import db
+from models import SiteSetting
+from config import Config
+from utils.auth import require_auth
 
 bp = Blueprint('settings', __name__, url_prefix='/api')
 

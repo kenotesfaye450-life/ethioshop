@@ -11,10 +11,10 @@ from telegram import (
     Update,
     WebAppInfo,
 )
-from bot.config import WEB_APP_URL, ADMIN_CHAT_ID
+from config import WEB_APP_URL, ADMIN_CHAT_ID
 from telegram.ext import ContextTypes, ConversationHandler, MessageHandler, filters
 
-from bot.services.api_client import APIClient
+from services.api_client import APIClient
 
 logger = logging.getLogger(__name__)
 

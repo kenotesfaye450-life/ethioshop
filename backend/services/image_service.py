@@ -1,6 +1,6 @@
 """Image upload service using Cloudinary"""
 import base64
-from backend.config import Config
+from config import Config
 import cloudinary
 import cloudinary.uploader
 

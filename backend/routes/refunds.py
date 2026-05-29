@@ -1,8 +1,8 @@
 """Refund routes"""
 from flask import Blueprint, request, jsonify
-from backend.extensions import db
-from backend.models import Refund, Order, User, CreditTransaction, Product, OrderMessage
-from backend.utils.auth import require_auth
+from extensions import db
+from models import Refund, Order, User, CreditTransaction, Product, OrderMessage
+from utils.auth import require_auth
 
 bp = Blueprint('refunds', __name__, url_prefix='/api/refunds')
 
@@ -139,7 +139,7 @@ def process_refund(refund_id):
         db.session.commit()
 
         try:
-            from backend.services.telegram_service import NotificationService
+            from services.telegram_service import NotificationService
             NotificationService.notify_refund_update(refund, order)
             NotificationService.notify_order_status_change(order)
         except Exception as e:
@@ -168,7 +168,7 @@ def request_refund_evidence(refund_id):
         db.session.commit()
 
         try:
-            from backend.services.telegram_service import NotificationService
+            from services.telegram_service import NotificationService
             NotificationService.notify_evidence_requested(refund=refund, note=note)
         except Exception as e:
             print(f"Notification error: {e}")

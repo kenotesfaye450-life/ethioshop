@@ -1,7 +1,7 @@
 """Image upload routes"""
 from flask import Blueprint, request, jsonify
-from backend.config import Config
-from backend.services.image_service import ImageService
+from config import Config
+from services.image_service import ImageService
 
 bp = Blueprint('upload', __name__, url_prefix='/api/upload')
 

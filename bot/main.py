@@ -29,9 +29,9 @@ from telegram.ext import (
     filters,
 )
 
-from bot.config import TELEGRAM_BOT_TOKEN
-from bot.handlers import commands, conversations, groups, inline
-from bot.handlers.commands import (
+from config import TELEGRAM_BOT_TOKEN
+from handlers import commands, conversations, groups, inline
+from handlers.commands import (
     AWAITING_CONTACT,
     AWAITING_REGISTER_NAME,
     CHECKOUT_ADDRESS,
@@ -44,8 +44,8 @@ from bot.handlers.commands import (
     checkout_confirm_response,
     checkout_cancel,
 )
-from bot.handlers.conversations import ASK_ORDER_ID, ASK_PHOTO
-from bot.services.api_client import APIClient
+from handlers.conversations import ASK_ORDER_ID, ASK_PHOTO
+from services.api_client import APIClient
 
 logging.basicConfig(
     format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',

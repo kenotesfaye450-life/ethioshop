@@ -2,10 +2,10 @@ from flask import Blueprint, request, jsonify
 from sqlalchemy import or_
 from sqlalchemy import func
 
-from backend.extensions import db
-from backend.models import Product, ProductImage, Review, Order, OrderItem
-from backend.services.image_service import ImageService
-from backend.utils.auth import require_auth
+from extensions import db
+from models import Product, ProductImage, Review, Order, OrderItem
+from services.image_service import ImageService
+from utils.auth import require_auth
 
 bp = Blueprint('products', __name__, url_prefix='/api/products')
 

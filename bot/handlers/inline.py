@@ -5,7 +5,7 @@ from uuid import uuid4
 from telegram import InlineQueryResultArticle, InputTextMessageContent, Update
 from telegram.ext import ContextTypes
 
-from bot.services.api_client import APIClient
+from services.api_client import APIClient
 
 logger = logging.getLogger(__name__)
 

@@ -4,14 +4,14 @@ import jwt
 from sqlalchemy import func
 from datetime import datetime, timedelta
 
-from backend.extensions import db
-from backend.models import (
+from extensions import db
+from models import (
     Admin, Order, User, Refund, Request, Referral,
     OrderItem, Product, CreditTransaction, ProductImage, SiteSetting,
 )
-from backend.config import Config
-from backend.utils.auth import require_auth, require_role
-from backend.utils.bot_auth import verify_bot_secret
+from config import Config
+from utils.auth import require_auth, require_role
+from utils.bot_auth import verify_bot_secret
 
 bp = Blueprint('admin', __name__, url_prefix='/api/admin')
 
@@ -385,7 +385,7 @@ def storage_cleanup():
                 if pid and pid not in referenced:
                     orphans.append({'public_id': pid, 'bytes': r.get('bytes', 0), 'url': r.get('secure_url')})
             if do_delete and orphans:
-                from backend.services.image_service import ImageService
+                from services.image_service import ImageService
                 for o in orphans:
                     try:
                         ImageService.delete_image(o['public_id'])

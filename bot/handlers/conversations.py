@@ -4,8 +4,8 @@ import logging
 from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
 
-from bot.handlers.commands import get_phone
-from bot.services.api_client import APIClient
+from handlers.commands import get_phone
+from services.api_client import APIClient
 
 logger = logging.getLogger(__name__)
 
