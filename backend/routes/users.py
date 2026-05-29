@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
 from sqlalchemy import func
-from backend.extensions import db
-from backend.models import User, Order, Request, TelegramUser, CreditTransaction, Product, BotCart, SiteSetting
-from backend.utils.auth import require_auth
-from backend.utils.bot_auth import verify_bot_secret
-from backend.config import Config
+from extensions import db
+from models import User, Order, Request, TelegramUser, CreditTransaction, Product, BotCart, SiteSetting
+from utils.auth import require_auth
+from utils.bot_auth import verify_bot_secret
+from config import Config
 import re
 import random
 import string
@@ -416,7 +416,7 @@ def get_user_orders(phone):
 @bp.route('/<phone>/refunds', methods=['GET'])
 def get_user_refunds(phone):
     try:
-        from backend.models import Refund
+        from models import Refund
         user = User.query.filter_by(phone=phone).first()
         if not user:
             return jsonify({'success': False, 'error': {'code': 'NOT_FOUND', 'message': 'User not found'}}), 404
