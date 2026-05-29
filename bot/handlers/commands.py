@@ -15,6 +15,7 @@ from config import WEB_APP_URL, ADMIN_CHAT_ID
 from telegram.ext import ContextTypes, ConversationHandler, MessageHandler, filters
 
 from services.api_client import APIClient
+from handlers.keyboards import MAIN_MENU_KEYBOARD, MENU_TEXT_TO_COMMAND, product_inline_buttons, shop_nav_buttons
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,16 @@ async def get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str |
     return None
 
 
+async def _maybe_send_announcement(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    api = _api(context)
+    data = await api.get_announcement()
+    if not data or not data.get('announcement', {}).get('announcement_active'):
+        return
+    msg = data['announcement'].get('announcement_message', '')
+    if msg:
+        await update.message.reply_text(f'📢 {msg}')
+
+
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = ReplyKeyboardMarkup(
         [[KeyboardButton('📱 Share my phone number', request_contact=True)]],
@@ -67,6 +78,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'New customers: we will ask for your full name next.',
         reply_markup=keyboard,
     )
+    await _maybe_send_announcement(update, context)
     return AWAITING_CONTACT
 
 
@@ -80,13 +92,10 @@ async def receive_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['phone'] = phone
         await update.message.reply_text(
             '✅ Phone linked successfully!\n\n'
-            'Commands:\n'
-            '/shop — Browse products\n'
-            '/orders — Your orders\n'
-            '/balance — Credit balance\n'
-            '/help — Help',
-            reply_markup=ReplyKeyboardRemove(),
+            'Use the menu below or /shop to browse.',
+            reply_markup=MAIN_MENU_KEYBOARD,
         )
+        await _maybe_send_announcement(update, context)
         return ConversationHandler.END
 
     # Existing user in DB but not linked yet — register path not needed
@@ -95,10 +104,10 @@ async def receive_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if await api.link_telegram(phone, chat_id):
             context.user_data['phone'] = phone
             await update.message.reply_text(
-                f"✅ Welcome back, {user.get('name') or 'customer'}! Phone linked.\n"
-                'Try /shop or /orders.',
-                reply_markup=ReplyKeyboardRemove(),
+                f"✅ Welcome back, {user.get('name') or 'customer'}! Phone linked.",
+                reply_markup=MAIN_MENU_KEYBOARD,
             )
+            await _maybe_send_announcement(update, context)
             return ConversationHandler.END
 
     context.user_data['pending_phone'] = phone
@@ -136,10 +145,11 @@ async def receive_register_name(update: Update, context: ContextTypes.DEFAULT_TY
         context.user_data['phone'] = phone
         await update.message.reply_text(
             f"✅ Account created for *{name}*!\n"
-            f"Your referral code: `{user.get('referral_code', '-')}`\n\n"
-            'Commands: /shop, /orders, /balance, /help',
+            f"Your referral code: `{user.get('referral_code', '-')}`",
             parse_mode='Markdown',
+            reply_markup=MAIN_MENU_KEYBOARD,
         )
+        await _maybe_send_announcement(update, context)
     else:
         await update.message.reply_text(
             f'✅ Account created, but Telegram link failed. Run /start again.'
@@ -215,26 +225,24 @@ async def _send_products(update: Update, context: ContextTypes.DEFAULT_TYPE, sea
     api = _api(context)
     data = await api.get_products(search=search, page=page, limit=PAGE_SIZE)
     if not data or not data.get('items'):
-        await update.message.reply_text('No products found.')
+        target = update.message or update.callback_query.message
+        await target.reply_text('No products found.')
         return
 
     items = data['items']
     lines = []
+    buttons = []
     for p in items:
         stock = '✅' if p.get('in_stock') else '❌'
-        lines.append(f"{stock} *{p['name']}* — {p['price']:.2f} ETB\n   ID: {p['id']}")
-
-    text = '🛍️ *Products*\n\n' + '\n\n'.join(lines)
-    buttons = []
-    nav = []
-    if page > 1:
-        nav.append(InlineKeyboardButton('◀ Prev', callback_data=f'shop:{search or ""}:{page - 1}'))
-    if page < data.get('pages', 1):
-        nav.append(InlineKeyboardButton('Next ▶', callback_data=f'shop:{search or ""}:{page + 1}'))
+        lines.append(f"{stock} *{p['name']}* — {p['price']:.2f} ETB")
+        buttons.append(product_inline_buttons(p))
+    nav = shop_nav_buttons(search, page, data.get('pages', 1))
     if nav:
         buttons.append(nav)
 
-    await update.message.reply_text(
+    text = '🛍️ *Products*\n\n' + '\n\n'.join(lines)
+    target = update.message or update.callback_query.message
+    await target.reply_text(
         text,
         parse_mode='Markdown',
         reply_markup=InlineKeyboardMarkup(buttons) if buttons else None,
@@ -394,11 +402,15 @@ async def cmd_balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text('User not found.')
         return
 
+    link = f"{WEB_APP_URL.rstrip('/')}/?ref={user['referral_code']}"
+    kb = InlineKeyboardMarkup([[InlineKeyboardButton('🔗 Copy referral link', callback_data='ref:copy')]])
     await update.message.reply_text(
         f"💰 Credit balance: *{user['credit_balance']:.2f} ETB*\n"
         f"Referral code: `{user['referral_code']}`\n"
-        f"Referrals: {user['total_referrals']}",
+        f"Referrals: {user['total_referrals']}\n"
+        f"Link: {link}",
         parse_mode='Markdown',
+        reply_markup=kb,
     )
 
 
@@ -420,6 +432,35 @@ async def cmd_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('✅ Added to cart.' if ok else '❌ Failed to add to cart.')
 
 
+async def _cart_keyboard(data: dict) -> InlineKeyboardMarkup:
+    buttons = []
+    for i in data.get('items', []):
+        pid = i['product_id']
+        buttons.append([
+            InlineKeyboardButton('+1', callback_data=f'cart:inc:{pid}'),
+            InlineKeyboardButton('-1', callback_data=f'cart:dec:{pid}'),
+            InlineKeyboardButton('❌ Remove', callback_data=f'cart:remove:{pid}'),
+        ])
+    buttons.append([
+        InlineKeyboardButton('✅ Checkout', callback_data='cart:checkout'),
+        InlineKeyboardButton('🗑️ Clear cart', callback_data='cart:clear'),
+    ])
+    return InlineKeyboardMarkup(buttons)
+
+
+async def refresh_cart_message(query, context, phone):
+    data = await _api(context).bot_get_cart(phone)
+    if not data or not data.get('items'):
+        await query.edit_message_text('Your cart is empty.')
+        return
+    lines = [f"{i['name']} x{i['quantity']} — {i['line_total']:.2f} ETB" for i in data['items']]
+    await query.edit_message_text(
+        "🛒 *Your cart*\n\n" + "\n".join(lines) + f"\n\nTotal: *{data.get('total', 0):.2f} ETB*",
+        parse_mode='Markdown',
+        reply_markup=await _cart_keyboard(data),
+    )
+
+
 async def cmd_cart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     phone = await get_phone(update, context)
     if not phone:
@@ -430,8 +471,11 @@ async def cmd_cart(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text('Your cart is empty.')
         return
     lines = [f"{i['name']} x{i['quantity']} — {i['line_total']:.2f} ETB" for i in data['items']]
-    kb = InlineKeyboardMarkup([[InlineKeyboardButton('Checkout on website', url=f"{WEB_APP_URL.rstrip('/')}/checkout.html")]])
-    await update.message.reply_text("🛒 *Your cart*\n\n" + "\n".join(lines) + f"\n\nTotal: *{data.get('total', 0):.2f} ETB*", parse_mode='Markdown', reply_markup=kb)
+    await update.message.reply_text(
+        "🛒 *Your cart*\n\n" + "\n".join(lines) + f"\n\nTotal: *{data.get('total', 0):.2f} ETB*",
+        parse_mode='Markdown',
+        reply_markup=await _cart_keyboard(data),
+    )
 
 
 async def checkout_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -486,34 +530,42 @@ async def _checkout_show_summary(update: Update, context: ContextTypes.DEFAULT_T
         return ConversationHandler.END
 
     total = cart.get('total', 0)
+    kb = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton('✅ Confirm order', callback_data='chk:yes'),
+            InlineKeyboardButton('❌ Cancel', callback_data='chk:no'),
+        ],
+    ])
     await update.message.reply_text(
         f'Order summary:\n'
         f'Delivery: {address}, {city}\n'
-        f'Total: {total:.2f} ETB (half payment on first installment)\n\n'
-        'Reply *yes* to confirm or *no* to cancel.',
+        f'Total: {total:.2f} ETB (half payment on first installment)',
         parse_mode='Markdown',
+        reply_markup=kb,
     )
     return CHECKOUT_CONFIRM
 
 
-async def checkout_confirm_response(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = (update.message.text or '').strip().lower()
-    if text in ('yes', 'y', 'confirm'):
-        api = _api(context)
-        result = await api.bot_checkout(
-            chat_id=context.user_data['checkout_chat_id'],
-            delivery_location=context.user_data.get('delivery_location', {}),
-            payment_plan='half',
-        )
-        if result.get('order_id'):
-            await update.message.reply_text(
-                f"Order #{result['order_id']} created!\n"
-                f"Pay the first half ({result.get('amount_paid_etb', 0):.2f} ETB) and upload proof: /pay {result['order_id']}"
-            )
-        else:
-            await update.message.reply_text(f"Failed to create order: {result.get('message', 'Unknown error')}")
+async def _run_bot_checkout(update, context, query=None):
+    api = _api(context)
+    result = await api.bot_checkout(
+        chat_id=context.user_data['checkout_chat_id'],
+        delivery_location=context.user_data.get('delivery_location', {}),
+        payment_plan='half',
+    )
+    msg = (
+        f"Order #{result['order_id']} created!\n"
+        f"Pay the first half ({result.get('amount_paid_etb', 0):.2f} ETB) and upload proof: /pay"
+        if result.get('order_id')
+        else f"Failed: {result.get('message', 'Unknown error')}"
+    )
+    if query:
+        await query.edit_message_text(msg)
     else:
-        await update.message.reply_text('Order cancelled. You can /checkout again later.')
+        await update.message.reply_text(msg)
+
+
+async def checkout_confirm_response(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 
@@ -563,8 +615,14 @@ async def cmd_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not text:
         await update.message.reply_text('Usage: /broadcast <message>')
         return
-    from backend.app import create_app
-    from backend.models import TelegramUser
+    import sys
+    import os
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    backend = os.path.join(root, 'backend')
+    if backend not in sys.path:
+        sys.path.insert(0, backend)
+    from app import create_app
+    from models import TelegramUser
     sent = 0
     app = create_app()
     with app.app_context():
@@ -576,3 +634,31 @@ async def cmd_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 continue
     await update.message.reply_text(f'Broadcast sent to {sent} users.')
+
+
+async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (update.message.text or '').strip().lower()
+    cmd = MENU_TEXT_TO_COMMAND.get(text)
+    if cmd == 'shop':
+        await cmd_shop(update, context)
+    elif cmd == 'cart':
+        await cmd_cart(update, context)
+    elif cmd == 'orders':
+        await cmd_orders(update, context)
+    elif cmd == 'balance':
+        await cmd_balance(update, context)
+    elif cmd == 'help':
+        await cmd_help(update, context)
+
+
+async def handle_natural_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (update.message.text or '').strip()
+    if not text or text.startswith('/'):
+        return
+    if text.lower() in MENU_TEXT_TO_COMMAND:
+        return
+    phone = await get_phone(update, context)
+    if not phone:
+        await update.message.reply_text('Please /start and share your phone first.')
+        return
+    await _send_products(update, context, search=text, page=1)

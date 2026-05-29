@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Cleanup - EthioShop Admin</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+    <aside class="sidebar">
+        <h2>EthioShop Admin</h2>
+        <nav>
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="orders.html">📦 Orders</a>
+            <a href="products.html">🛍️ Products</a>
+            <a href="requests.html">📋 Customer Requests</a>
+            <a href="questions.html">❓ Product Questions</a>
+            <a href="refunds.html">💰 Refunds</a>
+            <a href="settings.html">⚙️ Settings</a>
+            <a href="cleanup.html" class="active">🧹 Data Cleanup</a>
+            <a href="storage.html">🗄️ Storage</a>
+            <a href="admins.html">👥 Admins</a>
+            <a href="#" onclick="logout()">🚪 Logout</a>
+        </nav>
+    </aside>
+    <main class="admin-main">
+        <h1>Data Cleanup</h1>
+        <p>Preview counts before deleting. Super admin only.</p>
+        <div class="cart-container" style="margin:1.5rem 0;">
+            <h3>Test orders</h3>
+            <p>Delete orders stuck in <code>pending_verification</code> older than 7 days.</p>
+            <button class="btn btn-secondary" onclick="previewCleanup('test_orders')">Preview count</button>
+            <button class="btn btn-primary" onclick="executeCleanup('test_orders')">Delete (confirm)</button>
+            <p id="result-test_orders"></p>
+        </div>
+        <div class="cart-container">
+            <h3>Unconfirmed users</h3>
+            <p>Delete users with <strong>no orders</strong> registered more than 30 days ago.</p>
+            <button class="btn btn-secondary" onclick="previewCleanup('unconfirmed_users')">Preview count</button>
+            <button class="btn btn-primary" onclick="executeCleanup('unconfirmed_users')">Delete (confirm)</button>
+            <p id="result-unconfirmed_users"></p>
+        </div>
+    </main>
+</div>
+<script src="../config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/cleanup.js"></script>
+</body>
+</html>

@@ -40,6 +40,14 @@ const UserAPI = {
     getOrders: (phone) => apiCall(`${API_ENDPOINTS.users}/${encodeURIComponent(phone)}/orders`),
     getRequests: (phone) => apiCall(`${API_ENDPOINTS.users}/${encodeURIComponent(phone)}/requests`),
     getRefunds: (phone) => apiCall(`${API_ENDPOINTS.users}/${encodeURIComponent(phone)}/refunds`),
+    getQuestions: (phone) => apiCall(`${API_ENDPOINTS.users}/${encodeURIComponent(phone)}/questions`),
+};
+
+const QuestionAPI = {
+    ask: (productId, payload) => apiCall(`${API_BASE_URL}/api/products/${productId}/ask`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    }),
 };
 
 const RequestAPI = {

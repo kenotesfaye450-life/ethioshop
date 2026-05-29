@@ -92,6 +92,29 @@ def run_migration():
 
         db.session.execute("ALTER TABLE requests ADD COLUMN IF NOT EXISTS request_credit_awarded BOOLEAN DEFAULT FALSE")
 
+        db.session.execute("""
+            CREATE TABLE IF NOT EXISTS product_questions (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+                question TEXT NOT NULL,
+                answer TEXT,
+                status VARCHAR(20) DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT NOW(),
+                answered_at TIMESTAMP
+            )
+        """)
+        db.session.execute("""
+            CREATE TABLE IF NOT EXISTS admin_actions (
+                id SERIAL PRIMARY KEY,
+                admin_id INTEGER REFERENCES admins(id),
+                action_type VARCHAR(50) NOT NULL,
+                details TEXT,
+                records_affected INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+
         db.session.commit()
         print("✅ Production migration completed successfully.")
 

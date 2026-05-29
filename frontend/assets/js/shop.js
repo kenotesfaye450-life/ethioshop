@@ -148,6 +148,10 @@ function createProductCard(product) {
 }
 
 async function addToCart(productId) {
+    if (typeof requireLoginForAction === 'function') {
+        const phone = await requireLoginForAction('add items to your cart');
+        if (!phone) return;
+    }
     const product = allProducts.find(p => p.id === productId);
     if (product) cart.addItem(product);
 }

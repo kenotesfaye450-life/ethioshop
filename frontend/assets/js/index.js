@@ -54,4 +54,30 @@ async function loadLandingData() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', loadLandingData);
+async function loadFeaturedProducts() {
+    const grid = document.getElementById('featuredProducts');
+    if (!grid) return;
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/products?limit=6&page=1`);
+        const data = await res.json();
+        const items = data.items || [];
+        if (!items.length) {
+            grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;">Products coming soon.</p>';
+            return;
+        }
+        grid.innerHTML = items.map(p => `
+            <a href="product.html?id=${p.id}" class="product-card" style="text-decoration:none;color:inherit;background:#fff;border-radius:12px;padding:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <img src="${p.thumbnail_url || p.image_url || ''}" alt="" style="width:100%;height:140px;object-fit:cover;border-radius:8px;background:#eee;">
+                <h4 style="margin:0.75rem 0 0.25rem;font-size:1rem;">${p.name}</h4>
+                <p style="margin:0;font-weight:bold;color:#2c7da0;">${p.price.toFixed(2)} ETB</p>
+            </a>
+        `).join('');
+    } catch (e) {
+        grid.innerHTML = '<p style="color:#888;">Could not load products.</p>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadLandingData();
+    loadFeaturedProducts();
+});

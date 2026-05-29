@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Questions - EthioShop Admin</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+    <aside class="sidebar">
+        <h2>EthioShop Admin</h2>
+        <nav>
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="orders.html">📦 Orders</a>
+            <a href="products.html">🛍️ Products</a>
+            <a href="requests.html">📋 Customer Requests</a>
+            <a href="questions.html" class="active">❓ Product Questions</a>
+            <a href="refunds.html">💰 Refunds</a>
+            <a href="settings.html">⚙️ Settings</a>
+            <a href="cleanup.html">🧹 Data Cleanup</a>
+            <a href="storage.html">🗄️ Storage</a>
+            <a href="admins.html">👥 Admins</a>
+            <a href="#" onclick="logout()">🚪 Logout</a>
+        </nav>
+    </aside>
+    <main class="admin-main">
+        <h1>Product Questions</h1>
+        <p>Answer customer stock and availability questions.</p>
+        <div style="margin:1rem 0;">
+            <label>Filter: </label>
+            <select id="statusFilter" onchange="loadQuestions()">
+                <option value="pending">Pending</option>
+                <option value="answered">Answered</option>
+                <option value="all">All</option>
+            </select>
+        </div>
+        <div id="questionsList"><p>Loading...</p></div>
+    </main>
+</div>
+<script src="../config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/questions.js"></script>
+</body>
+</html>

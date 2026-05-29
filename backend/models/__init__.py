@@ -18,6 +18,8 @@ from models.order_message import OrderMessage
 from models.payment import Payment
 from models.review import Review
 from models.bot_cart import BotCart
+from models.product_question import ProductQuestion
+from models.admin_action import AdminAction
 
 __all__ = [
     'User',
@@ -36,4 +38,6 @@ __all__ = [
     'Payment',
     'Review',
     'BotCart',
+    'ProductQuestion',
+    'AdminAction',
 ]

@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from extensions import db
-from models import User, Order, Request, TelegramUser, CreditTransaction, Product, BotCart, SiteSetting
+from models import User, Order, Request, TelegramUser, CreditTransaction, Product, BotCart, SiteSetting, ProductQuestion
 from utils.auth import require_auth
 from utils.bot_auth import verify_bot_secret
 from config import Config
@@ -125,6 +125,41 @@ def bot_clear_cart():
         if not user:
             return jsonify({'success': False, 'error': {'code': 'NOT_FOUND', 'message': 'User not found'}}), 404
         BotCart.query.filter_by(user_id=user.id).delete()
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': {'code': 'SERVER_ERROR', 'message': str(e)}}), 500
+
+
+@bp.route('/bot/cart/item', methods=['PATCH'])
+def bot_update_cart_item():
+    auth_error = verify_bot_secret()
+    if auth_error:
+        return auth_error
+    try:
+        data = request.get_json() or {}
+        phone = data.get('phone', '').strip()
+        product_id = int(data.get('product_id'))
+        action = (data.get('action') or '').strip().lower()
+        user = User.query.filter_by(phone=phone).first()
+        if not user:
+            return jsonify({'success': False, 'error': {'code': 'NOT_FOUND', 'message': 'User not found'}}), 404
+        row = BotCart.query.filter_by(user_id=user.id, product_id=product_id).first()
+        if not row and action != 'add':
+            return jsonify({'success': False, 'error': {'code': 'NOT_FOUND', 'message': 'Cart item not found'}}), 404
+        if action == 'inc':
+            row.quantity += 1
+        elif action == 'dec':
+            row.quantity = max(1, row.quantity - 1)
+        elif action == 'remove':
+            if row:
+                db.session.delete(row)
+        elif action == 'set':
+            qty = max(int(data.get('quantity', 1)), 1)
+            row.quantity = qty
+        else:
+            return jsonify({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'Invalid action'}}), 400
         db.session.commit()
         return jsonify({'success': True}), 200
     except Exception as e:
@@ -484,3 +519,27 @@ def get_user_requests(phone):
                 'message': str(e)
             }
         }), 500
+
+
+@bp.route('/<phone>/questions', methods=['GET'])
+def get_user_questions(phone):
+    try:
+        user = User.query.filter_by(phone=phone).first()
+        if not user:
+            return jsonify({'success': False, 'error': {'code': 'NOT_FOUND', 'message': 'User not found'}}), 404
+        rows = ProductQuestion.query.filter_by(user_id=user.id).order_by(ProductQuestion.created_at.desc()).all()
+        return jsonify({
+            'success': True,
+            'questions': [{
+                'id': q.id,
+                'product_id': q.product_id,
+                'product_name': q.product.name if q.product else None,
+                'question': q.question,
+                'answer': q.answer,
+                'status': q.status,
+                'created_at': q.created_at.isoformat(),
+                'answered_at': q.answered_at.isoformat() if q.answered_at else None,
+            } for q in rows],
+        }), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': {'code': 'SERVER_ERROR', 'message': str(e)}}), 500

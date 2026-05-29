@@ -49,9 +49,13 @@
                         
                         <div class="form-group">
                             <label for="address">Delivery Address *</label>
+                            <button type="button" class="btn btn-secondary" id="useLocationBtn" style="margin-bottom:0.5rem;width:100%;" onclick="useCurrentLocation()">
+                                📍 Use my current location
+                            </button>
                             <textarea id="address" 
                                       required 
                                       placeholder="Enter your full address (city, area, landmark)"></textarea>
+                            <small id="locationStatus" style="color:#666;"></small>
                         </div>
 
                         <details class="local-person-section" style="margin:1rem 0;padding:1rem;border:1px solid #e0e0e0;border-radius:8px;background:#f9fcff;">

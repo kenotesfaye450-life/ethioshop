@@ -8,6 +8,7 @@ from extensions import db
 from models import (
     Admin, Order, User, Refund, Request, Referral,
     OrderItem, Product, CreditTransaction, ProductImage, SiteSetting,
+    ProductQuestion, AdminAction,
 )
 from config import Config
 from utils.auth import require_auth, require_role
@@ -335,6 +336,131 @@ def get_pending_orders():
             'orders': [{'id': o.id, 'user_phone': o.user.phone if o.user else None, 'created_at': o.created_at.isoformat()} for o in pending]
         }), 200
     except Exception as e:
+        return jsonify({'success': False, 'error': {'code': 'SERVER_ERROR', 'message': str(e)}}), 500
+
+
+@bp.route('/questions', methods=['GET'])
+@require_auth
+def list_product_questions():
+    try:
+        status = request.args.get('status', 'pending')
+        q = ProductQuestion.query
+        if status != 'all':
+            q = q.filter_by(status=status)
+        rows = q.order_by(ProductQuestion.created_at.desc()).limit(100).all()
+        items = []
+        for pq in rows:
+            items.append({
+                'id': pq.id,
+                'user_id': pq.user_id,
+                'user_phone': pq.user.phone if pq.user else None,
+                'user_name': pq.user.name if pq.user else None,
+                'product_id': pq.product_id,
+                'product_name': pq.product.name if pq.product else None,
+                'question': pq.question,
+                'answer': pq.answer,
+                'status': pq.status,
+                'created_at': pq.created_at.isoformat(),
+                'answered_at': pq.answered_at.isoformat() if pq.answered_at else None,
+            })
+        return jsonify({'success': True, 'questions': items}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': {'code': 'SERVER_ERROR', 'message': str(e)}}), 500
+
+
+@bp.route('/questions/<int:question_id>/answer', methods=['POST'])
+@require_auth
+def answer_product_question(question_id):
+    try:
+        data = request.get_json() or {}
+        answer = (data.get('answer') or '').strip()
+        if not answer:
+            return jsonify({
+                'success': False,
+                'error': {'code': 'VALIDATION_ERROR', 'message': 'answer is required'},
+            }), 400
+
+        pq = ProductQuestion.query.get(question_id)
+        if not pq:
+            return jsonify({'success': False, 'error': {'code': 'NOT_FOUND', 'message': 'Question not found'}}), 404
+
+        pq.answer = answer
+        pq.status = 'answered'
+        pq.answered_at = datetime.utcnow()
+        db.session.commit()
+
+        from services.telegram_service import NotificationService
+        NotificationService.notify_product_question_answered(pq)
+
+        return jsonify({'success': True, 'question': {'id': pq.id, 'status': pq.status}}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': {'code': 'SERVER_ERROR', 'message': str(e)}}), 500
+
+
+@bp.route('/cleanup', methods=['POST'])
+@require_auth
+@require_role(['super_admin'])
+def admin_cleanup():
+    """Preview or execute cleanup actions."""
+    try:
+        data = request.get_json() or {}
+        action = data.get('action')
+        execute = bool(data.get('execute', False))
+        if action not in ('test_orders', 'unconfirmed_users'):
+            return jsonify({
+                'success': False,
+                'error': {'code': 'VALIDATION_ERROR', 'message': 'Invalid action'},
+            }), 400
+
+        admin_id = getattr(request, 'admin_id', None)
+        count = 0
+
+        if action == 'test_orders':
+            cutoff = datetime.utcnow() - timedelta(days=7)
+            q = Order.query.filter(
+                Order.status == 'pending_verification',
+                Order.created_at < cutoff,
+            )
+            count = q.count()
+            if execute:
+                deleted = q.delete(synchronize_session=False)
+                db.session.add(AdminAction(
+                    admin_id=admin_id,
+                    action_type='cleanup_test_orders',
+                    details=f'Deleted pending_verification orders older than 7 days',
+                    records_affected=deleted,
+                ))
+                db.session.commit()
+                count = deleted
+        elif action == 'unconfirmed_users':
+            cutoff = datetime.utcnow() - timedelta(days=30)
+            users = User.query.filter(User.created_at < cutoff).all()
+            to_delete = []
+            for u in users:
+                has_order = Order.query.filter_by(user_id=u.id).first()
+                if not has_order:
+                    to_delete.append(u)
+            count = len(to_delete)
+            if execute:
+                for u in to_delete:
+                    db.session.delete(u)
+                db.session.add(AdminAction(
+                    admin_id=admin_id,
+                    action_type='cleanup_unconfirmed_users',
+                    details='Deleted users with no orders older than 30 days',
+                    records_affected=count,
+                ))
+                db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'action': action,
+            'count': count,
+            'executed': execute,
+        }), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'success': False, 'error': {'code': 'SERVER_ERROR', 'message': str(e)}}), 500
 
 

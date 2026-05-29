@@ -54,6 +54,9 @@ class APIClient:
             logger.error('API error %s %s: %s', method, path, e)
             return None
 
+    async def get_product(self, product_id: int) -> dict | None:
+        return await self._request('GET', f'/products/{product_id}')
+
     async def get_products(
         self,
         search: str | None = None,
@@ -141,6 +144,14 @@ class APIClient:
     async def bot_get_cart(self, phone: str) -> dict | None:
         return await self._request('GET', '/users/bot/cart', params={'phone': phone})
 
+    async def bot_update_cart(self, phone: str, product_id: int, action: str) -> bool:
+        data = await self._request(
+            'PATCH',
+            '/users/bot/cart/item',
+            json={'phone': phone, 'product_id': product_id, 'action': action},
+        )
+        return data is not None
+
     async def bot_clear_cart(self, phone: str) -> bool:
         data = await self._request('DELETE', '/users/bot/cart', params={'phone': phone})
         return data is not None
@@ -154,6 +165,17 @@ class APIClient:
 
     async def bot_pending(self) -> dict | None:
         return await self._request('GET', '/admin/bot/pending')
+
+    async def confirm_delivery(self, order_id: int, phone: str) -> bool:
+        data = await self._request(
+            'POST',
+            f'/orders/{order_id}/confirm-delivery',
+            json={'phone': phone},
+        )
+        return data is not None and data.get('success', True)
+
+    async def get_announcement(self) -> dict | None:
+        return await self._request('GET', '/settings/announcement')
 
     async def bot_checkout(
         self,

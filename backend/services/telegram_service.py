@@ -37,11 +37,14 @@ def _get_chat_id(user) -> str | None:
     try:
         from models import TelegramUser
         tg = TelegramUser.query.filter_by(user_id=user.id).first()
-        if tg:
+        if tg and tg.chat_id and not str(tg.chat_id).startswith('unsubscribed:'):
             return tg.chat_id
     except Exception:
         pass
-    return getattr(user, 'telegram_chat_id', None)
+    legacy = getattr(user, 'telegram_chat_id', None)
+    if legacy and not str(legacy).startswith('unsubscribed:'):
+        return legacy
+    return None
 
 
 class NotificationService:
@@ -172,4 +175,15 @@ class NotificationService:
             )
         else:
             return
+        NotificationService._notify_customer(user, msg)
+
+    @staticmethod
+    def notify_product_question_answered(product_question):
+        user = product_question.user
+        product_name = product_question.product.name if product_question.product else 'product'
+        msg = (
+            f"💬 <b>Answer about {product_name}</b>\n\n"
+            f"<i>Your question:</i> {product_question.question}\n\n"
+            f"<i>Answer:</i> {product_question.answer}"
+        )
         NotificationService._notify_customer(user, msg)

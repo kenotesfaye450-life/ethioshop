@@ -36,8 +36,40 @@
         nav.appendChild(btn);
     }
 
+    async function injectAnnouncementBanner() {
+        try {
+            const res = await fetch(`${window.API_BASE_URL || ''}/api/settings/announcement`);
+            const data = await res.json();
+            if (!data.success || !data.announcement?.announcement_active) return;
+            if (sessionStorage.getItem('announcement_banner_dismissed') === '1') return;
+            if (document.getElementById('announcementBanner')) return;
+
+            const ann = data.announcement;
+            const banner = document.createElement('div');
+            banner.id = 'announcementBanner';
+            banner.className = 'announcement-banner';
+            banner.innerHTML = `
+                <div class="announcement-banner-inner">
+                    <span>📢 ${ann.announcement_message || ''}</span>
+                    <button type="button" id="announcementBannerClose" aria-label="Dismiss">×</button>
+                </div>
+            `;
+            const header = document.querySelector('header');
+            if (header) {
+                document.body.insertBefore(banner, header);
+            } else {
+                document.body.prepend(banner);
+            }
+            document.getElementById('announcementBannerClose').onclick = () => {
+                sessionStorage.setItem('announcement_banner_dismissed', '1');
+                banner.remove();
+            };
+        } catch (_) {
+            // no-op
+        }
+    }
+
     async function injectAnnouncementModal() {
-        if (document.body.classList.contains('landing-page')) return;
         try {
             const res = await fetch(`${window.API_BASE_URL || ''}/api/settings/announcement`);
             const data = await res.json();
@@ -165,6 +197,7 @@
         injectMobileMenu();
         injectSocialFooter();
         injectTrustBadges();
+        injectAnnouncementBanner();
         injectAnnouncementModal();
         startRecentSalesPopup();
     });

@@ -586,7 +586,54 @@ footer {
 .trust-badges span { background: #eef7ff; color: #245b8f; border: 1px solid #d6e9fb; border-radius: 20px; padding: 0.4rem 0.75rem; font-size: 0.85rem; }
 .low-stock-badge { margin-top: 0.4rem; color: #c0392b; font-weight: 700; font-size: 0.85rem; }
 
+.announcement-banner {
+    background: linear-gradient(90deg, #2c7da0, #1a5f7a);
+    color: #fff;
+    padding: 0.65rem 0;
+    position: relative;
+    z-index: 100;
+}
+.announcement-banner-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.95rem;
+}
+.announcement-banner button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    font-size: 1.25rem;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.dashboard-layout { display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem; align-items: start; }
+.dashboard-nav { display: flex; flex-direction: column; gap: 0.35rem; }
+.dash-tab {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    min-height: 44px;
+}
+.dash-tab.active { background: #2c7da0; color: #fff; border-color: #2c7da0; }
+.dash-panel { display: none; }
+.dash-panel.active { display: block; }
+.dashboard-bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #ddd; padding: 0.35rem; z-index: 50; flex-wrap: wrap; gap: 0.25rem; justify-content: space-around; }
+.dashboard-bottom-nav .dash-tab { flex: 1; font-size: 0.75rem; padding: 0.5rem; min-width: 0; text-align: center; }
+
 @media (max-width: 768px) {
+    .dashboard-layout { grid-template-columns: 1fr; padding-bottom: 4.5rem; }
+    .dashboard-nav { display: none; }
+    .dashboard-bottom-nav { display: flex; }
     .container { padding: 0 12px; }
     .mobile-menu-toggle { display: inline-flex; }
     .nav-links { display: none; width: 100%; margin-top: 0.75rem; flex-direction: column; align-items: stretch; background: rgba(0,0,0,0.15); border-radius: 8px; padding: 0.5rem; }

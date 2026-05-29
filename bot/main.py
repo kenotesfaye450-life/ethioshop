@@ -44,7 +44,9 @@ from handlers.commands import (
     checkout_confirm_response,
     checkout_cancel,
 )
-from handlers.conversations import ASK_ORDER_ID, ASK_PHOTO
+from handlers.conversations import ASK_ORDER_ID, ASK_PHOTO, pay_photo
+from handlers.callbacks import handle_callback
+from handlers.commands import handle_menu_text, handle_natural_language
 from services.api_client import APIClient
 
 logging.basicConfig(
@@ -82,11 +84,16 @@ def main():
         entry_points=[CommandHandler('pay', conversations.pay_start)],
         states={
             ASK_ORDER_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, conversations.pay_order_id)],
-            ASK_PHOTO: [MessageHandler(filters.PHOTO, conversations.pay_photo)],
+            ASK_PHOTO: [MessageHandler(filters.PHOTO, pay_photo)],
         },
         fallbacks=[CommandHandler('cancel', conversations.pay_cancel)],
     )
     app.add_handler(pay_conv)
+    async def pay_photo_if_pending(update, context):
+        if context.user_data.get('pay_order_id'):
+            return await pay_photo(update, context)
+
+    app.add_handler(MessageHandler(filters.PHOTO, pay_photo_if_pending), group=1)
 
     checkout_conv = ConversationHandler(
         entry_points=[CommandHandler('checkout', checkout_start)],
@@ -98,9 +105,7 @@ def main():
                 MessageHandler(filters.TEXT & ~filters.COMMAND, checkout_city_received),
                 CommandHandler('skip', checkout_skip_city),
             ],
-            CHECKOUT_CONFIRM: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, checkout_confirm_response),
-            ],
+            CHECKOUT_CONFIRM: [],
         },
         fallbacks=[CommandHandler('cancel', checkout_cancel)],
     )
@@ -120,7 +125,9 @@ def main():
     app.add_handler(CommandHandler('stats', commands.cmd_stats))
     app.add_handler(CommandHandler('pending', commands.cmd_pending))
     app.add_handler(CommandHandler('broadcast', commands.cmd_broadcast))
-    app.add_handler(CallbackQueryHandler(commands.shop_callback, pattern=r'^(shop:|shopcat:|trk:)'))
+    app.add_handler(CallbackQueryHandler(handle_callback))
+    app.add_handler(MessageHandler(filters.Regex(r'^(🛍️|🛒|📦|💰|ℹ️)'), handle_menu_text))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_natural_language), group=2)
     app.add_handler(InlineQueryHandler(inline.inline_query))
     app.add_handler(MessageHandler(filters.Regex(r'^!price\s+'), groups.group_price_command))
 

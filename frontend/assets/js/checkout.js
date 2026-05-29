@@ -215,9 +215,43 @@ function updateEscrowMessage() {
     box.style.display = half ? 'block' : 'none';
 }
 
+async function useCurrentLocation() {
+    const statusEl = document.getElementById('locationStatus');
+    const addressEl = document.getElementById('address');
+    if (!navigator.geolocation) {
+        if (statusEl) statusEl.textContent = 'Geolocation is not supported on this device.';
+        return;
+    }
+    if (statusEl) statusEl.textContent = 'Getting your location…';
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+        try {
+            const { latitude, longitude } = pos.coords;
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
+            const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+            const data = await res.json();
+            const addr = data.display_name || '';
+            if (addressEl && addr) {
+                addressEl.value = addr;
+                sessionStorage.setItem('delivery_location', JSON.stringify({
+                    address: addr,
+                    city: data.address?.city || data.address?.town || data.address?.state || '',
+                    lat: latitude,
+                    lon: longitude,
+                }));
+            }
+            if (statusEl) statusEl.textContent = 'Location applied. You can edit the address if needed.';
+        } catch (e) {
+            if (statusEl) statusEl.textContent = 'Could not resolve address. Please type it manually.';
+        }
+    }, () => {
+        if (statusEl) statusEl.textContent = 'Location denied. Please enter your address manually.';
+    }, { enableHighAccuracy: true, timeout: 15000 });
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     initCheckout();
     updateEscrowMessage();
 });
 window.updateEscrowMessage = updateEscrowMessage;
+window.useCurrentLocation = useCurrentLocation;

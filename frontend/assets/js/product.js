@@ -61,6 +61,12 @@ function renderProductDetail() {
                         ${!p.in_stock ? 'disabled' : ''}
                         onclick="addDetailToCart()">Add to Cart</button>
                 <a href="shop.html" class="btn btn-secondary" style="margin-left:0.5rem;">← Back to Shop</a>
+                <div class="cart-container" style="margin-top:1.5rem;">
+                    <h3>Ask about stock</h3>
+                    <textarea id="stockQuestion" rows="2" placeholder="e.g. Do you have size 42 in black?" style="width:100%;margin-bottom:0.5rem;"></textarea>
+                    <button type="button" class="btn btn-secondary" onclick="submitStockQuestion()">Send question</button>
+                    <p id="stockQuestionMsg" style="font-size:0.9rem;margin-top:0.5rem;"></p>
+                </div>
             </div>
         </div>
         ${Array.isArray(p.reviews) && p.reviews.length ? `
@@ -79,8 +85,30 @@ function setGalleryImage(url, btn) {
     btn.classList.add('active');
 }
 
-function addDetailToCart() {
+async function addDetailToCart() {
+    if (typeof requireLoginForAction === 'function') {
+        const phone = await requireLoginForAction('add this item to your cart');
+        if (!phone) return;
+    }
     if (productData) cart.addItem(productData);
+}
+
+async function submitStockQuestion() {
+    const q = document.getElementById('stockQuestion')?.value?.trim();
+    const msg = document.getElementById('stockQuestionMsg');
+    if (!q) { if (msg) msg.textContent = 'Enter a question.'; return; }
+    let phone = sessionStorage.getItem('userPhone');
+    if (!phone && typeof requireLoginForAction === 'function') {
+        phone = await requireLoginForAction('ask about this product');
+    }
+    if (!phone) return;
+    try {
+        await QuestionAPI.ask(productData.id, { phone, question: q });
+        if (msg) msg.textContent = 'Question sent! Check your dashboard for the answer.';
+        document.getElementById('stockQuestion').value = '';
+    } catch (e) {
+        if (msg) msg.textContent = e.message;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', loadProductDetail);

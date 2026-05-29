@@ -25,7 +25,8 @@
             <strong>EthioShop</strong>
             <div>
                 <a href="#how">How it works</a>
-                <a href="#login">Login</a>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="#login">Account</a>
                 <a href="shop.html">Shop</a>
                 <a href="about.html">About</a>
             </div>
@@ -41,6 +42,17 @@
                 <a href="shop.html" class="btn btn-secondary" style="background:#fff;color:#2c7da0;">Browse Shop</a>
                 <a href="https://t.me/EthioShopTrusted_bot" class="btn btn-secondary" target="_blank" rel="noopener" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid #fff;">Telegram Bot</a>
             </div>
+        </div>
+    </section>
+
+    <section class="landing-section" style="background:#f8f9fa;">
+        <div class="container">
+            <h2 style="text-align:center;margin-bottom:1.5rem;">Featured products</h2>
+            <div id="featuredProducts" class="products-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.25rem;"></div>
+            <p style="text-align:center;margin-top:1.5rem;">
+                <a href="shop.html" class="btn btn-primary">Shop all products</a>
+                <a href="request.html" class="btn btn-secondary" style="margin-left:0.5rem;">Request a product</a>
+            </p>
         </div>
     </section>
 
@@ -182,10 +194,6 @@
                 if (input) input.value = cleaned;
             }
         })();
-
-        if (sessionStorage.getItem('userPhone')) {
-            window.location.href = 'dashboard.html';
-        }
 
         function showError(msg) { okEl.style.display = 'none'; errEl.textContent = msg; errEl.style.display = 'block'; }
         function showSuccess(msg) { errEl.style.display = 'none'; okEl.textContent = msg; okEl.style.display = 'block'; }

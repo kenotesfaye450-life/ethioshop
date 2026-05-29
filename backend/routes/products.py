@@ -3,7 +3,7 @@ from sqlalchemy import or_
 from sqlalchemy import func
 
 from extensions import db
-from models import Product, ProductImage, Review, Order, OrderItem
+from models import Product, ProductImage, Review, Order, OrderItem, ProductQuestion, User
 from services.image_service import ImageService
 from utils.auth import require_auth
 
@@ -364,6 +364,55 @@ def recent_reviews():
             })
         return jsonify({'success': True, 'reviews': items}), 200
     except Exception as e:
+        return jsonify({'success': False, 'error': {'code': 'SERVER_ERROR', 'message': str(e)}}), 500
+
+
+@bp.route('/<int:product_id>/ask', methods=['POST'])
+def ask_product_question(product_id):
+    """Customer asks about product stock/availability."""
+    try:
+        data = request.get_json() or {}
+        phone = (data.get('phone') or '').strip()
+        question = (data.get('question') or '').strip()
+        if not phone or not question:
+            return jsonify({
+                'success': False,
+                'error': {'code': 'VALIDATION_ERROR', 'message': 'phone and question are required'},
+            }), 400
+
+        product = Product.query.get(product_id)
+        if not product:
+            return jsonify({'success': False, 'error': {'code': 'NOT_FOUND', 'message': 'Product not found'}}), 404
+
+        user = User.query.filter_by(phone=phone).first()
+        if not user:
+            return jsonify({
+                'success': False,
+                'error': {'code': 'NOT_FOUND', 'message': 'User not found. Please register first.'},
+            }), 404
+
+        pq = ProductQuestion(
+            user_id=user.id,
+            product_id=product.id,
+            question=question,
+            status='pending',
+        )
+        db.session.add(pq)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'question': {
+                'id': pq.id,
+                'product_id': product.id,
+                'product_name': product.name,
+                'question': pq.question,
+                'status': pq.status,
+                'created_at': pq.created_at.isoformat(),
+            },
+        }), 201
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'success': False, 'error': {'code': 'SERVER_ERROR', 'message': str(e)}}), 500
 
 

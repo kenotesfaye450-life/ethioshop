@@ -5,10 +5,7 @@ let refundsSnapshot = {};
 let pollTimer = null;
 
 function getReferralLink(code) {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    return isLocal
-        ? `${window.location.origin}/index.html?ref=${encodeURIComponent(code)}`
-        : `https://ethioshop.et/?ref=${encodeURIComponent(code)}`;
+    return `${window.location.origin}/?ref=${encodeURIComponent(code)}`;
 }
 
 async function initDashboard() {
@@ -259,8 +256,92 @@ async function requestRefund(orderId) {
     }
 }
 
+function switchDashboardTab(tab) {
+    document.querySelectorAll('.dash-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+    });
+    document.querySelectorAll('.dash-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === `panel-${tab}`);
+    });
+}
+
+function initDashboardTabs() {
+    document.querySelectorAll('.dash-tab').forEach(btn => {
+        btn.addEventListener('click', () => switchDashboardTab(btn.dataset.tab));
+    });
+    const bottom = document.getElementById('dashboardBottomNav');
+    if (bottom && window.matchMedia('(max-width: 768px)').matches) {
+        bottom.innerHTML = document.getElementById('dashboardNav').innerHTML;
+        bottom.querySelectorAll('.dash-tab').forEach(btn => {
+            btn.addEventListener('click', () => switchDashboardTab(btn.dataset.tab));
+        });
+    }
+}
+
+async function loadRequestsPanel() {
+    const phone = sessionStorage.getItem('userPhone');
+    const el = document.getElementById('requestsContainer');
+    if (!el || !phone) return;
+    try {
+        const data = await UserAPI.getRequests(phone);
+        const requests = data.requests || [];
+        el.innerHTML = requests.length
+            ? requests.map(r => `<div class="order-card"><strong>#${r.id}</strong> — ${r.status} — ${r.description || ''}</div>`).join('')
+            : '<p>No requests yet.</p>';
+    } catch (e) {
+        el.innerHTML = `<p style="color:red;">${e.message}</p>`;
+    }
+}
+
+async function loadQuestionsPanel() {
+    const phone = sessionStorage.getItem('userPhone');
+    const el = document.getElementById('questionsContainer');
+    if (!el || !phone) return;
+    try {
+        const data = await UserAPI.getQuestions(phone);
+        const items = data.questions || [];
+        if (!items.length) {
+            el.innerHTML = '<p>No questions yet. Open a product and ask about stock.</p>';
+            return;
+        }
+        el.innerHTML = items.map(q => `
+            <div class="order-card">
+                <strong>${q.product_name || 'Product'}</strong>
+                <span class="status-badge status-${q.status === 'answered' ? 'confirmed' : 'pending'}">${q.status}</span>
+                <p><strong>Q:</strong> ${q.question}</p>
+                ${q.answer ? `<p style="color:#27ae60;"><strong>A:</strong> ${q.answer}</p>` : '<p><em>Waiting for shop reply…</em></p>'}
+            </div>
+        `).join('');
+        items.filter(q => q.status === 'answered').forEach(q => {
+            NotificationCenter.add('Product question answered', `${q.product_name}: ${q.answer}`, 'success');
+        });
+    } catch (e) {
+        el.innerHTML = `<p style="color:red;">${e.message}</p>`;
+    }
+}
+
+function saveSettingsName() {
+    const name = document.getElementById('settingsName')?.value?.trim();
+    if (name) sessionStorage.setItem('userName', name);
+    if (currentUser) currentUser.name = name;
+    alert('Name saved locally. Full profile update coming soon.');
+}
+
+function logoutUser() {
+    sessionStorage.removeItem('userPhone');
+    sessionStorage.removeItem('userName');
+    if (pollTimer) clearInterval(pollTimer);
+    window.location.href = 'index.html';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    initDashboard();
+    initDashboardTabs();
+    initDashboard().then(() => {
+        loadRequestsPanel();
+        loadQuestionsPanel();
+        const sn = document.getElementById('settingsName');
+        if (sn) sn.value = sessionStorage.getItem('userName') || '';
+    });
     NotificationCenter.updateBell();
 });
 
