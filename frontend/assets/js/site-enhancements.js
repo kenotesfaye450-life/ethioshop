@@ -166,36 +166,7 @@
         mainContainer.prepend(el);
     }
 
-    async function startRecentSalesPopup() {
-        if (document.body.classList.contains('landing-page')) return;
-        try {
-            const res = await fetch(`${window.API_BASE_URL || ''}/api/products/recent-sales`);
-            const data = await res.json();
-            const items = data.items || [];
-            if (!items.length) return;
-            let idx = 0;
-            const holder = document.createElement('div');
-            holder.className = 'toast-container';
-            holder.style.left = '1rem';
-            holder.style.right = 'auto';
-            holder.style.bottom = '1rem';
-            document.body.appendChild(holder);
-
-            const show = () => {
-                const it = items[idx % items.length];
-                idx += 1;
-                const toast = document.createElement('div');
-                toast.className = 'toast show';
-                toast.textContent = `Someone in ${it.city || 'Addis Ababa'} just bought ${it.product_name}.`;
-                holder.appendChild(toast);
-                setTimeout(() => toast.remove(), 5000);
-            };
-            show();
-            setInterval(show, 10000);
-        } catch (_) {
-            // no-op
-        }
-    }
+    // Recent sales popup removed - no longer needed
 
     document.addEventListener('DOMContentLoaded', () => {
         injectFontAwesome();
@@ -205,6 +176,6 @@
         injectTrustBadges();
         injectAnnouncementBanner();
         injectAnnouncementModal();
-        startRecentSalesPopup();
+        // startRecentSalesPopup() removed - no longer showing social proof popup
     });
 })();
