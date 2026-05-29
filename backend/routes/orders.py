@@ -1,14 +1,14 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
 from math import ceil
-from backend.extensions import db
+from extensions import db
 from sqlalchemy import func
-from backend.models import (
+from models import (
     Order, OrderItem, User, Product, CreditTransaction, Referral, OrderMessage,
     Payment, Review, SiteSetting,
 )
-from backend.config import Config
-from backend.utils.auth import require_auth, require_role
+from config import Config
+from utils.auth import require_auth, require_role
 
 bp = Blueprint('orders', __name__, url_prefix='/api/orders')
 
@@ -396,7 +396,7 @@ def assign_delivery(order_id):
         
         # Send notification
         try:
-            from backend.services.telegram_service import NotificationService
+            from services.telegram_service import NotificationService
             NotificationService.notify_order_status_change(order)
         except Exception as e:
             print(f"Notification error: {e}")
@@ -503,7 +503,7 @@ def verify_order(order_id):
         
         # Send notification
         try:
-            from backend.services.telegram_service import NotificationService
+            from services.telegram_service import NotificationService
             NotificationService.notify_order_status_change(order)
         except Exception as e:
             print(f"Notification error: {e}")
@@ -578,7 +578,7 @@ def update_delivery_status(order_id):
         db.session.commit()
 
         try:
-            from backend.services.telegram_service import NotificationService
+            from services.telegram_service import NotificationService
             NotificationService.notify_order_status_change(order)
         except Exception as e:
             print(f"Notification error: {e}")
@@ -820,7 +820,7 @@ def request_order_evidence(order_id):
         db.session.commit()
 
         try:
-            from backend.services.telegram_service import NotificationService
+            from services.telegram_service import NotificationService
             NotificationService.notify_evidence_requested(order=order, note=note)
         except Exception as e:
             print(f"Notification error: {e}")
