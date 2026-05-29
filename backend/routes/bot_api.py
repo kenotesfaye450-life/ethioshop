@@ -3,9 +3,9 @@ from math import ceil
 
 from flask import Blueprint, jsonify, request
 
-from backend.config import Config
-from backend.extensions import db
-from backend.models import (
+from config import Config
+from extensions import db
+from models import (
     BotCart,
     CreditTransaction,
     Order,
@@ -15,8 +15,8 @@ from backend.models import (
     TelegramUser,
     User,
 )
-from backend.routes.orders import calculate_max_credit
-from backend.utils.bot_auth import verify_bot_secret
+from routes.orders import calculate_max_credit
+from utils.bot_auth import verify_bot_secret
 
 bp = Blueprint('bot_api', __name__, url_prefix='/api/bot')
 
