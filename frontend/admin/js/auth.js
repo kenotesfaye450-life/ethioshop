@@ -1,15 +1,7 @@
 // Shared admin auth helpers + login page handler
 
-function getApiRoot() {
-    const base = (typeof window !== 'undefined' && window.API_BASE_URL)
-        ? window.API_BASE_URL
-        : ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://localhost:5000'
-            : 'https://your-backend.onrender.com');
-    return `${base.replace(/\/$/, '')}/api`;
-}
-
-const ADMIN_API = getApiRoot();
+// Hardcoded Railway backend API root (no trailing slash)
+const ADMIN_API = 'https://web-production-afefc.up.railway.app/api';
 
 function getToken() {
     const token = localStorage.getItem('adminToken');
