@@ -12,7 +12,7 @@ def create_app():
     app = Flask(__name__)
 
     # Load config
-    from backend.config import Config
+    from config import Config
     app.config.from_object(Config)
     Config.validate()
 
@@ -55,7 +55,7 @@ def create_app():
         }), 200
 
     # Register blueprints
-    from backend.routes import products, orders, users, admin, upload, requests, refunds, settings, bot_api
+    from routes import products, orders, users, admin, upload, requests, refunds, settings, bot_api
 
     app.register_blueprint(products.bp)
     app.register_blueprint(orders.bp)
